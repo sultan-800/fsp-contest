@@ -1,0 +1,40 @@
+{% load fsp %}{% with ns=request.resolver_match.namespace un=request.resolver_match.url_name %}
+<header class="header">
+  <div class="container header__in">
+    <a class="logo" href="{% url 'core:home' %}" aria-label="ФСП Контест — на главную">
+      <span class="logo__mark"><svg class="i" viewBox="0 0 24 24"><use href="#i-logo"></use></svg></span>
+      <span class="logo__txt"><span class="logo__name">ФСП Контест</span><span class="logo__sub">sport · programming</span></span>
+    </a>
+    <nav class="nav" id="nav" aria-label="Основная навигация">
+      <a href="{% url 'core:home' %}" class="{% if ns == 'core' and un == 'home' %}is-active{% endif %}">Главная</a>
+      <a href="{% url 'competitions:list' %}" class="{% if ns == 'competitions' %}is-active{% endif %}">Соревнования</a>
+      <a href="{% url 'rating:index' %}" class="{% if ns == 'rating' %}is-active{% endif %}">Рейтинг</a>
+      <a href="{% url 'core:info' %}" class="{% if ns == 'core' and un != 'home' and un != 'notifications' %}is-active{% endif %}">Инфоцентр</a>
+      {% if user.is_authenticated %}<a href="{% url 'accounts:profile' %}" class="{% if ns == 'accounts' %}is-active{% endif %}">Профиль</a>{% endif %}
+      {% if not user.is_authenticated %}<a class="nav__mobile" href="{% url 'accounts:login' %}">Войти</a><a class="nav__mobile" href="{% url 'accounts:register' %}" style="color:var(--accent)">Регистрация</a>{% endif %}
+      {% if user.is_authenticated and user.is_organizer %}<a href="{% url 'panel:dashboard' %}" class="nav__panel {% if ns == 'panel' %}is-active{% endif %}">{% icon 'dashboard' 'i--sm' %}Панель организатора</a>{% endif %}
+    </nav>
+    <div class="header__right">
+      {% if user.is_authenticated %}
+        <a class="bell" href="{% url 'core:notifications' %}" aria-label="Уведомления">{% icon 'bell' %}{% if unread_notifications %}<span class="count">{{ unread_notifications }}</span>{% endif %}</a>
+        <details class="menu">
+          <summary>{% avatar user 'sm' %}<span class="menu__txt"><span class="menu__name">{{ user.display_name }}</span><br><span class="menu__role">{{ user.get_role_display }}</span></span></summary>
+          <div class="menu__drop">
+            <a href="{% url 'accounts:profile' %}">{% icon 'user' %}Мой профиль</a>
+            {% if user.is_organizer %}<a href="{% url 'panel:dashboard' %}">{% icon 'dashboard' %}Панель организатора</a>
+            <a href="{% url 'panel:submissions' %}">{% icon 'inbox' %}Проверка решений</a>{% endif %}
+            <a href="{% url 'accounts:profile' %}?tab=contests">{% icon 'code' %}Мои контесты</a>
+            <a href="{% url 'accounts:settings' %}">{% icon 'settings' %}Настройки</a>
+            <hr>
+            <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button type="submit">{% icon 'logout' %}Выйти</button></form>
+          </div>
+        </details>
+      {% else %}
+        <a class="btn btn--ghost btn--sm" href="{% url 'accounts:login' %}">Войти</a>
+        <a class="btn btn--primary btn--sm" href="{% url 'accounts:register' %}">Регистрация</a>
+      {% endif %}
+      <button class="btn btn--ghost btn--icon btn--sm burger" type="button" data-burger aria-controls="nav" aria-expanded="false" aria-label="Меню">{% icon 'menu' %}</button>
+    </div>
+  </div>
+</header>
+{% endwith %}

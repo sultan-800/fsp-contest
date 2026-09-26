@@ -1,0 +1,42 @@
+{% extends "base.html" %}{% load fsp %}
+{% block title %}Регистрация спортсмена{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+<div class="auth">
+  {% include "accounts/_auth_art.html" with headline="Твой код.<br>Твой <span>рейтинг.</span>" sub="Профиль спортсмена хранит историю выступлений, результаты и позицию в рейтинге федерации." %}
+  <div class="auth__form"><div class="auth__box auth__box--wide">
+    <span class="eyebrow">Новый спортсмен</span>
+    <h1 class="mt2">Регистрация</h1>
+    <p class="muted mb3">Уже есть аккаунт? <a class="link" href="{% url 'accounts:login' %}">Войти</a></p>
+    <form method="post" class="form" novalidate>
+      {% csrf_token %}
+      {% include "partials/form_errors.html" %}
+      <div class="form-section"><div class="form-section__title">Личные данные</div>
+        <div class="form-grid">
+          {% include "partials/field.html" with f=form.last_name %}
+          {% include "partials/field.html" with f=form.first_name %}
+          {% include "partials/field.html" with f=form.middle_name %}
+          {% include "partials/field.html" with f=form.birth_date %}
+          {% include "partials/field.html" with f=form.city %}
+          {% include "partials/field.html" with f=form.institution %}
+        </div></div>
+      <div class="form-section"><div class="form-section__title">Спортивный профиль</div>
+        <div class="form-grid">
+          {% include "partials/field.html" with f=form.qualification span=1 %}
+          {% include "partials/field.html" with f=form.disciplines span=1 %}
+        </div></div>
+      <div class="form-section"><div class="form-section__title">Учётная запись</div>
+        <div class="form-grid">
+          {% include "partials/field.html" with f=form.username %}
+          {% include "partials/field.html" with f=form.email %}
+          {% include "partials/field.html" with f=form.password1 %}
+          {% include "partials/field.html" with f=form.password2 %}
+        </div></div>
+      <div class="hp" aria-hidden="true">{{ form.website }}</div>
+      {% include "partials/field.html" with f=form.consent %}
+      <p class="help" style="margin-top:-8px">Подробнее — в <a class="link" href="{% url 'core:privacy' %}" target="_blank">политике конфиденциальности</a>. Email и дата рождения никогда не публикуются.</p>
+      <button class="btn btn--primary btn--lg btn--block" type="submit">Создать профиль спортсмена {% icon 'arrow-right' 'arrow' %}</button>
+    </form>
+  </div></div>
+</div>
+{% endblock %}

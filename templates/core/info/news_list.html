@@ -1,0 +1,13 @@
+{% extends "core/info/_layout.html" %}{% load fsp %}
+{% block title %}Новости{% endblock %}
+{% block crumbs %}<span class="sep">/</span><span>Новости</span>{% endblock %}
+{% block head_block %}<h1>Новости</h1>{% endblock %}
+{% block info %}
+{% if tags %}<div class="seg mb3"><a href="?" class="{% if not tag %}is-active{% endif %}">Все</a>{% for t in tags %}<a href="?tag={{ t|urlencode }}" class="{% if tag == t %}is-active{% endif %}">{{ t }}</a>{% endfor %}</div>{% endif %}
+<div class="grid g2">{% for n in page.object_list %}
+  <a class="news-card" href="{{ n.get_absolute_url }}">
+    <div class="news-card__meta"><span>{% if n.is_pinned %}📌 {% endif %}{{ n.tag }}</span><span>{{ n.published_at|date:"d.m.Y" }}</span></div>
+    <h3>{{ n.title }}</h3><p>{{ n.excerpt|default:n.body|truncatechars:160 }}</p><span class="link">Читать {% icon 'arrow-right' 'i--sm' %}</span>
+  </a>{% empty %}<div class="card empty">Новостей пока нет</div>{% endfor %}</div>
+{% include "partials/pager.html" %}
+{% endblock %}

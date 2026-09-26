@@ -1,0 +1,17 @@
+{% extends "panel/_layout.html" %}{% load fsp %}
+{% block title %}Проверка решений{% endblock %}
+{% block panel %}
+<div class="plo__head"><div><span class="eyebrow">Ручная проверка</span><h1>Проверка решений</h1><p>{{ pending_total }} {{ pending_total|plural:"решение ожидает,решения ожидают,решений ожидают" }} проверки. Решения проверяются в порядке поступления.</p></div>
+  {% if page.object_list and status == 'pending' %}<a class="btn btn--primary btn--lg" href="{% url 'panel:review' page.object_list.0.pk %}">{% icon 'play' %} Начать проверку</a>{% endif %}</div>
+<form class="filters mb3" method="get" data-autosubmit>
+  <div class="seg">
+    <a href="{% qs status='pending' page='' %}" class="{% if status == 'pending' %}is-active{% endif %}">На проверке <span class="n">{{ pending_total }}</span></a>
+    <a href="{% qs status='reviewed' page='' %}" class="{% if status == 'reviewed' %}is-active{% endif %}">Проверенные</a>
+    <a href="{% qs status='all' page='' %}" class="{% if status == 'all' %}is-active{% endif %}">Все</a>
+  </div>
+  <input type="hidden" name="status" value="{{ status }}">
+  <select name="competition"><option value="">Все соревнования</option>{% for c in competitions %}<option value="{{ c.pk }}" {% if comp == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.title }}</option>{% endfor %}</select>
+</form>
+{% include "panel/_subs_table.html" with rows=page.object_list show_comp=1 %}
+{% include "partials/pager.html" %}
+{% endblock %}

@@ -1,0 +1,27 @@
+{% load fsp %}
+<footer class="footer">
+  <div class="container">
+    <div class="footer__top">
+      <div>
+        <a class="logo" href="{% url 'core:home' %}"><span class="logo__mark"><svg class="i" viewBox="0 0 24 24"><use href="#i-logo"></use></svg></span><span class="logo__txt"><span class="logo__name">ФСП Контест</span><span class="logo__sub">sport · programming</span></span></a>
+        <p class="footer__about">Цифровая платформа Федерации спортивного программирования: соревнования, проверка решений, результаты и единый рейтинг спортсменов.</p>
+        <span class="secure-note mono" style="font-size:12px">{% icon 'shield' 'i--sm' %} Данные защищены · CSP · CSRF · HTTPS-ready</span>
+      </div>
+      <div><h4>Платформа</h4><ul>
+        <li><a href="{% url 'competitions:list' %}">Соревнования</a></li>
+        <li><a href="{% url 'rating:index' %}">Рейтинг спортсменов</a></li>
+        <li><a href="{% url 'rating:index' %}#method">Методика рейтинга</a></li>
+        <li><a href="{% url 'accounts:register' %}">Стать участником</a></li></ul></div>
+      <div><h4>Инфоцентр</h4><ul>
+        <li><a href="{% url 'core:news' %}">Новости</a></li>
+        <li><a href="{% url 'core:calendar' %}">Календарь</a></li>
+        <li><a href="{% url 'core:documents' %}">Документы и положения</a></li>
+        <li><a href="{% url 'core:faq' %}">Вопросы и ответы</a></li></ul></div>
+      <div><h4>Участникам</h4><ul>
+        <li><a href="{% url 'core:documents' %}?cat=rules">Правила соревнований</a></li>
+        <li><a href="{% url 'core:documents' %}?cat=material">Полезные материалы</a></li>
+        <li><a href="{% url 'core:privacy' %}">Политика конфиденциальности</a></li></ul></div>
+    </div>
+    <div class="footer__bottom"><span>© {% now "Y" %} ФСП Контест · Федерация спортивного программирования</span><span>// build v1.0 · MVP</span></div>
+  </div>
+</footer>

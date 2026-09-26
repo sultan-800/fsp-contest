@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% load fsp %}
+{% block title %}{{ athlete.full_name }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="phead__crumbs mt3"><a href="{% url 'rating:index' %}">Рейтинг</a><span class="sep">/</span><span>Спортсмен</span></div>
+  {% include "accounts/_cover.html" %}
+  {% if limited %}<div class="callout mt3">{% icon 'lock' %}<span>Спортсмен ограничил видимость профиля. Показаны только официальные результаты.</span></div>{% endif %}
+  {% if viewer_is_org %}<div class="row mt3"><a class="btn btn--sm" href="{% url 'panel:athlete' athlete.pk %}">{% icon 'settings' 'i--sm' %} Управление в панели</a></div>{% endif %}
+  <div class="mt3">{% include "accounts/_overview.html" %}</div>
+</div>
+{% endblock %}

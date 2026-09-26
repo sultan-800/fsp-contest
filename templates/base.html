@@ -1,0 +1,35 @@
+{% load static fsp %}<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="description" content="{% block description %}ФСП Контест — платформа Федерации спортивного программирования для проведения онлайн-соревнований, проверки решений и ведения рейтинга спортсменов.{% endblock %}">
+<meta name="theme-color" content="#07080c">
+<title>{% block fulltitle %}{% block title %}{% endblock %} · {{ SITE_NAME }}{% endblock %}</title>
+<link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+<link rel="preload" href="{% static 'fonts/unbounded-cyrillic-700-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{% static 'fonts/manrope-cyrillic-500-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+<link rel="stylesheet" href="{% static 'css/app.css' %}">
+{% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+{% include "partials/icons.html" %}
+{% include "partials/header.html" %}
+{% if messages %}
+<div class="toasts" role="status" aria-live="polite">
+  {% for m in messages %}
+  <div class="toast toast--{{ m.tags|default:'info' }}">
+    {% if m.tags == 'success' %}{% icon 'check-circle' %}{% elif m.tags == 'error' %}{% icon 'alert' %}{% elif m.tags == 'warning' %}{% icon 'alert' %}{% else %}{% icon 'info' %}{% endif %}
+    <span>{{ m }}</span>
+    <button type="button" aria-label="Закрыть">{% icon 'x' 'i--sm' %}</button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+<main id="main">{% block content %}{% endblock %}</main>
+{% block footer %}{% include "partials/footer.html" %}{% endblock %}
+<script src="{% static 'js/app.js' %}" defer></script>
+</body>
+</html>

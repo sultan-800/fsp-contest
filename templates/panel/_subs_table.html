@@ -1,0 +1,14 @@
+{% load fsp %}
+<div class="table-wrap"><table class="table">
+  <thead><tr><th>ID</th><th>Спортсмен</th><th>Задача</th><th>Язык</th><th>Отправлено</th><th>Статус</th><th class="tr">Баллы</th><th></th></tr></thead>
+  <tbody>{% for s in rows %}{% with v=s.verdict %}<tr>
+    <td class="num">#{{ s.pk }}</td>
+    <td><b>{{ s.athlete.full_name }}</b>{% if show_comp %}<br><small class="muted">{{ s.competition.title|truncatechars:38 }}</small>{% endif %}</td>
+    <td><span class="chip">{{ s.task.letter }}</span> <span style="font-size:13px">{{ s.task.title|truncatechars:26 }}</span></td>
+    <td class="mono" style="font-size:12px">{{ s.get_language_display }}{% if s.original_filename %}<br><span class="dim">{% icon 'file' 'i--sm' %} файл</span>{% endif %}</td>
+    <td class="num" style="font-size:12px">{{ s.created_at|date:"d.m H:i:s" }}</td>
+    <td><span class="badge v-{{ v.0 }}">{{ v.1 }}</span></td>
+    <td class="tr num" style="font-weight:700">{% if s.score is not None %}{{ s.score }}/{{ s.task.max_score }}{% else %}—{% endif %}</td>
+    <td class="tr"><a class="btn btn--xs {% if s.status == 'pending' %}btn--primary{% endif %}" href="{% url 'panel:review' s.pk %}">{% if s.status == 'pending' %}Проверить{% else %}Открыть{% endif %}</a></td>
+  </tr>{% endwith %}{% empty %}<tr><td colspan="8"><div class="empty">{% icon 'inbox' %}<h3>Решений нет</h3></div></td></tr>{% endfor %}</tbody>
+</table></div>

@@ -1,0 +1,77 @@
+{% extends "base.html" %}{% load fsp %}
+{% block title %}Настройки профиля{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="phead">
+    <div class="phead__crumbs"><a href="{% url 'accounts:profile' %}">Профиль</a><span class="sep">/</span><span>Настройки</span></div>
+    <h1>Настройки</h1><p>Личные данные, приватность и безопасность учётной записи.</p>
+  </div>
+  <div class="info-layout">
+    <nav class="side-nav">
+      <a href="#profile" class="is-active">{% icon 'user' %}Профиль</a>
+      <a href="#privacy">{% icon 'eye' %}Приватность</a>
+      <a href="#security">{% icon 'lock' %}Пароль</a>
+      <a href="#data">{% icon 'shield' %}Мои данные</a>
+    </nav>
+    <div class="stack-lg">
+      <form method="post" class="card card--pad-lg form" id="profile" novalidate>
+        {% csrf_token %}<input type="hidden" name="action" value="profile">
+        <h2 style="font-size:20px;margin:0">Личные данные</h2>
+        {% include "partials/form_errors.html" with form=profile_form %}
+        <div class="form-grid">
+          {% include "partials/field.html" with f=profile_form.last_name %}
+          {% include "partials/field.html" with f=profile_form.first_name %}
+          {% include "partials/field.html" with f=profile_form.middle_name %}
+          {% include "partials/field.html" with f=profile_form.birth_date %}
+          {% include "partials/field.html" with f=profile_form.email %}
+          {% include "partials/field.html" with f=profile_form.city %}
+          {% include "partials/field.html" with f=profile_form.institution span=1 %}
+          {% include "partials/field.html" with f=profile_form.qualification span=1 %}
+          {% include "partials/field.html" with f=profile_form.disciplines span=1 %}
+          {% include "partials/field.html" with f=profile_form.bio span=1 %}
+        </div>
+        <div class="form-actions"><button class="btn btn--primary" type="submit">Сохранить изменения</button></div>
+      </form>
+
+      <form method="post" class="card card--pad-lg form" id="privacy">
+        {% csrf_token %}<input type="hidden" name="action" value="privacy">
+        <h2 style="font-size:20px;margin:0">Приватность</h2>
+        <p class="muted mb0">Email и дата рождения всегда скрыты и доступны только организатору. ФИО, город и результаты публикуются в итоговых таблицах соревнований.</p>
+        {% include "partials/field.html" with f=privacy_form.is_profile_public %}
+        {% include "partials/field.html" with f=privacy_form.show_institution %}
+        <div class="form-actions"><button class="btn btn--primary" type="submit">Сохранить</button></div>
+      </form>
+
+      <form method="post" class="card card--pad-lg form" id="security" novalidate>
+        {% csrf_token %}<input type="hidden" name="action" value="password">
+        <h2 style="font-size:20px;margin:0">Смена пароля</h2>
+        {% include "partials/form_errors.html" with form=password_form %}
+        <div class="form-grid">
+          {% include "partials/field.html" with f=password_form.old_password span=1 %}
+          {% include "partials/field.html" with f=password_form.new_password1 %}
+          {% include "partials/field.html" with f=password_form.new_password2 %}
+        </div>
+        <div class="form-actions"><button class="btn btn--primary" type="submit">Изменить пароль</button></div>
+      </form>
+
+      <div class="card card--pad-lg" id="data">
+        <h2 style="font-size:20px">Мои данные</h2>
+        <p class="muted">Вы можете выгрузить все персональные данные, которые хранит платформа, или удалить аккаунт.</p>
+        <a class="btn" href="{% url 'accounts:export' %}">{% icon 'download' %} Выгрузить мои данные (JSON)</a>
+        <hr>
+        <form method="post" class="form" novalidate data-confirm="Удалить аккаунт безвозвратно?">
+          {% csrf_token %}<input type="hidden" name="action" value="delete">
+          <h3 style="font-size:16px;color:#ff8b96;margin:0">Удаление аккаунта</h3>
+          <p class="muted mb0" style="font-size:14px">Персональные данные будут стёрты. Спортивные результаты останутся в протоколах в обезличенном виде.</p>
+          <div class="form-grid">
+            {% include "partials/field.html" with f=delete_form.password %}
+            <div></div>
+            {% include "partials/field.html" with f=delete_form.confirm span=1 %}
+          </div>
+          <div class="form-actions"><button class="btn btn--danger" type="submit">{% icon 'trash' %} Удалить аккаунт</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% load fsp %}{% with v=s.verdict %}
+<a href="{% url 'competitions:submission' s.pk %}">
+  <span class="chip">{{ s.task.letter }}</span>
+  <span><b>#{{ s.pk }}</b> <span class="mono">{{ s.get_language_display }}</span>{% if s.original_filename %} · <span class="muted">{{ s.original_filename }}</span>{% endif %}<br><span class="mono">{{ s.created_at|date:"d.m H:i:s" }}</span></span>
+  <span class="badge v-{{ v.0 }}">{{ v.1 }}</span>
+  <span class="mono" style="font-weight:700;min-width:64px;text-align:right">{% if s.score is not None %}{{ s.score }} / {{ s.task.max_score }}{% else %}—{% endif %}</span>
+</a>{% endwith %}

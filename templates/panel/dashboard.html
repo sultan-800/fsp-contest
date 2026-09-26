@@ -1,0 +1,47 @@
+{% extends "panel/_layout.html" %}{% load fsp %}
+{% block title %}Панель организатора{% endblock %}
+{% block panel %}
+<div class="plo__head">
+  <div><span class="eyebrow">Панель организатора</span><h1>Добрый день, {{ user.first_name|default:user.username }}</h1><p>Сводка по платформе и задачи, требующие внимания.</p></div>
+  <a class="btn btn--primary btn--lg" href="{% url 'panel:competition_new' %}">{% icon 'plus' %} Создать соревнование</a>
+</div>
+
+<div class="grid g4">
+  <a class="kpi {% if pending_count %}kpi--accent{% endif %}" href="{% url 'panel:submissions' %}" style="color:inherit">
+    <div class="kpi__label">{% icon 'inbox' 'i--sm' %} Ждут проверки</div><div class="kpi__value">{{ pending_count }}</div><div class="kpi__sub">{% if pending_count %}Перейти к проверке →{% else %}Очередь пуста{% endif %}</div></a>
+  <div class="kpi"><div class="kpi__label">{% icon 'users' 'i--sm' %} Спортсмены</div><div class="kpi__value">{{ stats.athletes }}</div><div class="kpi__sub">+{{ stats.new_athletes }} за 7 дней</div></div>
+  <div class="kpi"><div class="kpi__label">{% icon 'code' 'i--sm' %} Решения</div><div class="kpi__value">{{ stats.submissions }}</div><div class="kpi__sub">+{{ stats.submissions_today }} за сутки</div></div>
+  <div class="kpi"><div class="kpi__label">{% icon 'trophy' 'i--sm' %} Соревнования</div><div class="kpi__value">{{ stats.competitions }}</div><div class="kpi__sub">{{ stats.registrations }} заявок всего</div></div>
+</div>
+
+{% if awaiting_results or unverified %}
+<div class="stack-sm mt3">
+  {% for c in awaiting_results %}<div class="callout callout--warn">{% icon 'alert' %}<span class="grow"><strong>«{{ c.title }}»</strong> завершено — нужно проверить решения и подвести итоги.</span><a class="btn btn--sm" href="{% url 'panel:competition' c.pk %}?tab=results">Подвести итоги</a></div>{% endfor %}
+  {% if unverified %}<div class="callout">{% icon 'medal' %}<span class="grow"><strong>{{ unverified }}</strong> {{ unverified|plural:"спортсмен ждёт,спортсмена ждут,спортсменов ждут" }} подтверждения разряда.</span><a class="btn btn--sm" href="{% url 'panel:athletes' %}?f=unverified">Проверить</a></div>{% endif %}
+</div>
+{% endif %}
+
+<div class="grid mt3" style="grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)">
+  <div class="card card--flush">
+    <div class="card__head card__head--bar"><h3 class="card__title">Очередь проверки</h3><a class="link" href="{% url 'panel:submissions' %}">Все {% icon 'arrow-right' 'i--sm' %}</a></div>
+    {% for s in pending %}
+      <a class="qrow" href="{% url 'panel:review' s.pk %}"><span class="chip">{{ s.task.letter }}</span><span><b>{{ s.athlete.full_name }}</b><br><small class="muted">{{ s.competition.title|truncatechars:40 }} · #{{ s.pk }}</small></span><span class="mono dim" style="font-size:12px">{{ s.created_at|timesince }} назад</span><span class="btn btn--xs btn--primary">Проверить</span></a>
+    {% empty %}<div class="empty">{% icon 'check-circle' %}<h3>Все решения проверены</h3></div>{% endfor %}
+  </div>
+  <div class="stack">
+    <div class="card">
+      <div class="card__head"><h3 class="card__title">{% icon 'bolt' 'accent' %} Идут сейчас</h3></div>
+      {% for c in running %}<a class="row row--between" style="padding:10px 0;border-bottom:1px solid var(--line)" href="{% url 'panel:competition' c.pk %}"><span><b style="font-size:14px">{{ c.title }}</b><br><small class="muted">{{ c.n }} участн. · до {{ c.end_at|date:"d.m H:i" }}</small></span><span class="timer-mini"><span data-countdown="{{ c.end_at|date:'c' }}" data-mode="mini">—</span></span></a>{% empty %}<p class="muted mb0">Нет идущих соревнований.</p>{% endfor %}
+    </div>
+    <div class="card">
+      <div class="card__head"><h3 class="card__title">Ближайшие</h3></div>
+      {% for c in upcoming %}<a class="row row--between" style="padding:10px 0;border-bottom:1px solid var(--line)" href="{% url 'panel:competition' c.pk %}"><span><b style="font-size:14px">{{ c.title }}</b><br><small class="muted">{{ c.start_at|date:"d.m H:i" }} · {{ c.n }} заявок</small></span>{% icon 'chevron-right' 'muted' %}</a>{% empty %}<p class="muted mb0">Нет запланированных.</p>{% endfor %}
+    </div>
+    {% if drafts %}<div class="card">
+      <div class="card__head"><h3 class="card__title">Черновики</h3></div>
+      {% for c in drafts %}<a class="row row--between" style="padding:10px 0;border-bottom:1px solid var(--line)" href="{% url 'panel:competition' c.pk %}"><b style="font-size:14px">{{ c.title }}</b><span class="badge st-draft">Черновик</span></a>{% endfor %}
+    </div>{% endif %}
+    <form method="post" action="{% url 'panel:rating_recalculate' %}">{% csrf_token %}<button class="btn btn--ghost btn--block" type="submit">{% icon 'refresh' %} Пересчитать рейтинг</button></form>
+  </div>
+</div>
+{% endblock %}

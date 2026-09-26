@@ -1,0 +1,50 @@
+{% extends "base.html" %}{% load fsp %}
+{% block title %}Соревнования{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="phead">
+    <div class="phead__crumbs"><a href="{% url 'core:home' %}">Главная</a><span class="sep">/</span><span>Соревнования</span></div>
+    <div class="phead__row">
+      <div><h1>Соревнования</h1><p>Онлайн-контесты и очные турниры федерации. Регистрируйтесь, решайте задачи и получайте рейтинговые очки.</p></div>
+      <div class="seg">
+        <a href="{% qs status='' page='' %}" class="{% if not f.status %}is-active{% endif %}">Все <span class="n">{{ counts.all }}</span></a>
+        <a href="{% qs status='running' %}" class="{% if f.status == 'running' %}is-active{% endif %}">Идут <span class="n">{{ counts.running }}</span></a>
+        <a href="{% qs status='published' %}" class="{% if f.status == 'published' %}is-active{% endif %}">Скоро <span class="n">{{ counts.published }}</span></a>
+        <a href="{% qs status='finished' %}" class="{% if f.status == 'finished' %}is-active{% endif %}">Завершены <span class="n">{{ counts.finished }}</span></a>
+      </div>
+    </div>
+  </div>
+
+  <form class="filters" method="get" data-autosubmit>
+    {% if f.status %}<input type="hidden" name="status" value="{{ f.status }}">{% endif %}
+    <label class="search">{% icon 'search' %}<input type="search" name="q" value="{{ f.q }}" placeholder="Поиск по названию" aria-label="Поиск"></label>
+    <select name="discipline" aria-label="Дисциплина"><option value="">Все дисциплины</option>{% for d in disciplines %}<option value="{{ d.pk }}" {% if f.discipline == d.pk|stringformat:'s' %}selected{% endif %}>{{ d.name }}</option>{% endfor %}</select>
+    <select name="level" aria-label="Уровень"><option value="">Любой уровень</option>{% for l in levels %}<option value="{{ l.pk }}" {% if f.level == l.pk|stringformat:'s' %}selected{% endif %}>{{ l.name }}</option>{% endfor %}</select>
+    <select name="format" aria-label="Формат"><option value="">Любой формат</option>{% for v, l in formats %}<option value="{{ v }}" {% if f.format == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+    <button class="btn btn--primary" type="submit">Найти</button>
+    {% if f.q or f.discipline or f.level or f.format %}<a class="btn btn--ghost" href="{% url 'competitions:list' %}{% if f.status %}?status={{ f.status }}{% endif %}">Сбросить</a>{% endif %}
+  </form>
+
+  {% if running %}
+  <section class="mt4">
+    <div class="shead"><div><span class="eyebrow">Прямо сейчас</span><h2 style="font-size:24px">Идут · {{ running|length }}</h2></div></div>
+    <div class="bento">{% for c in running %}{% include "partials/ccard.html" with big=forloop.first %}{% endfor %}</div>
+  </section>
+  {% endif %}
+  {% if upcoming %}
+  <section class="mt4">
+    <div class="shead"><div><span class="eyebrow">Регистрация открыта</span><h2 style="font-size:24px">Скоро старт · {{ upcoming|length }}</h2></div></div>
+    <div class="grid g3">{% for c in upcoming %}{% include "partials/ccard.html" %}{% endfor %}</div>
+  </section>
+  {% endif %}
+  {% if finished %}
+  <section class="mt4">
+    <div class="shead"><div><span class="eyebrow">Архив</span><h2 style="font-size:24px">Завершённые · {{ finished|length }}</h2></div></div>
+    <div class="grid g3">{% for c in finished %}{% include "partials/ccard.html" %}{% endfor %}</div>
+  </section>
+  {% endif %}
+  {% if not total %}
+  <div class="card empty mt3">{% icon 'search' %}<h3>Ничего не найдено</h3><p>Попробуйте изменить фильтры.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "panel/_layout.html" %}{% load fsp %}
+{% block title %}Проверка #{{ s.pk }}{% endblock %}
+{% block panel %}
+<div class="plo__head"><div>
+  <div class="phead__crumbs" style="margin:0"><a href="{% url 'panel:submissions' %}">Проверка</a><span class="sep">/</span><a href="{% url 'panel:competition' s.competition.pk %}?tab=submissions">{{ s.competition.title|truncatechars:40 }}</a><span class="sep">/</span><span>#{{ s.pk }}</span></div>
+  <h1>Решение #{{ s.pk }} · задача {{ s.task.letter }}</h1>
+  <p>{{ s.athlete.full_name }} · попытка {{ s.attempt_number }} · {{ s.created_at|date:"j E Y, H:i:s" }} · {{ s.elapsed_minutes|hm }} от старта</p>
+</div>
+<div class="row">{% with v=s.verdict %}<span class="badge badge--lg v-{{ v.0 }}">{{ v.1 }}</span>{% endwith %}<span class="mono muted" style="font-size:12px">в очереди ещё: {{ queue_left }}</span></div></div>
+
+<div class="review">
+  <div class="stack">
+    <div class="codeview">
+      <div class="codeview__bar"><span>{% icon 'code' 'i--sm' %} {{ s.get_language_display }}</span>{% if s.original_filename %}<span>{% icon 'file' 'i--sm' %} {{ s.original_filename }}</span>{% endif %}<span>{{ s.line_count }} строк · {{ s.code|length }} симв.</span><span class="grow"></span><button class="btn btn--xs" type="button" data-copy="code-src">Копировать</button><a class="btn btn--xs" href="{% url 'competitions:submission_download' s.pk %}">{% icon 'download' 'i--sm' %} Скачать</a></div>
+      {% if s.code %}<div class="codeview__body"><div class="codeview__lines">{% for i in lines %}{{ i }}
+{% endfor %}</div><pre id="code-src">{{ s.code }}</pre></div>{% else %}<div class="empty">Файл не является текстом — скачайте его для проверки.</div>{% endif %}
+    </div>
+    <details class="card">
+      <summary style="cursor:pointer;font-weight:700">Условие задачи {{ s.task.letter }}. {{ s.task.title }}</summary>
+      <div class="prose mt2" style="font-size:14px">{{ s.task.statement|markup }}{% if s.task.sample_input %}<pre>{{ s.task.sample_input }}</pre><pre>{{ s.task.sample_output }}</pre>{% endif %}</div>
+    </details>
+  </div>
+
+  <aside class="stack" style="position:sticky;top:calc(var(--header-h) + 20px)">
+    <form method="post" class="card form" novalidate>
+      {% csrf_token %}
+      <h3 class="card__title">Оценка</h3>
+      {% if s.competition.results_published %}<div class="callout callout--warn">{% icon 'lock' %}<span>Итоги опубликованы. Чтобы изменить оценку, отзовите итоги.</span></div>{% endif %}
+      <div class="score-input"><label class="sr-only" for="id_score">Баллы</label><input type="number" name="score" id="id_score" min="0" max="{{ s.task.max_score }}" value="{{ form.score.value|default_if_none:'' }}" required autofocus><span>/ {{ s.task.max_score }}</span></div>
+      {% if form.score.errors %}<ul class="errors">{% for e in form.score.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      <div class="quick-scores">
+        <button type="button" data-score="0" data-target="id_score">0</button>
+        <button type="button" data-score="{% widthratio s.task.max_score 4 1 %}" data-target="id_score">25%</button>
+        <button type="button" data-score="{% widthratio s.task.max_score 2 1 %}" data-target="id_score">50%</button>
+        <button type="button" data-score="{% widthratio s.task.max_score 4 3 %}" data-target="id_score">75%</button>
+        <button type="button" data-score="{{ s.task.max_score }}" data-target="id_score">100%</button>
+      </div>
+      <div class="field"><label for="id_comment">Комментарий</label>{{ form.comment }}</div>
+      <div class="form-actions" style="flex-direction:column;align-items:stretch">
+        <button class="btn btn--primary btn--lg" type="submit" name="next" value="1">{% icon 'check' %} Сохранить и следующее</button>
+        <button class="btn" type="submit">Сохранить</button>
+      </div>
+      {% if s.reviewed_by %}<p class="help mb0">Проверил: {{ s.reviewed_by.display_name }}, {{ s.reviewed_at|date:"d.m H:i" }}</p>{% endif %}
+    </form>
+    <div class="card">
+      <h3 class="card__title mb2">Участник</h3>
+      <div class="row" style="flex-wrap:nowrap">{% avatar s.athlete %}<div><b>{{ s.athlete.full_name }}</b><br><small class="muted">{{ s.athlete.city }} · {{ s.athlete.qualification.short|default:"б/р" }}</small></div></div>
+    </div>
+    {% if others %}<div class="card">
+      <h3 class="card__title mb2">Другие попытки по задаче</h3>
+      <div class="stack-sm">{% for o in others %}{% with v=o.verdict %}<a class="row row--between" href="{% url 'panel:review' o.pk %}" style="font-size:13px"><span class="mono">#{{ o.pk }} · {{ o.created_at|date:"H:i:s" }}</span><span class="badge v-{{ v.0 }}">{% if o.score is not None %}{{ o.score }}{% else %}?{% endif %}</span></a>{% endwith %}{% endfor %}</div>
+    </div>{% endif %}
+  </aside>
+</div>
+{% endblock %}

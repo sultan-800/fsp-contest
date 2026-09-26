@@ -1,0 +1,29 @@
+{% extends "panel/_layout.html" %}{% load fsp %}
+{% block title %}Результаты — {{ c.title }}{% endblock %}
+{% block panel %}
+<div class="plo__head"><div>
+  <div class="phead__crumbs" style="margin:0"><a href="{% url 'panel:competitions' %}">Соревнования</a><span class="sep">/</span><a href="{% url 'panel:competition' c.pk %}?tab=results">{{ c.title|truncatechars:40 }}</a><span class="sep">/</span><span>Внесение результатов</span></div>
+  <h1>Внесение результатов</h1><p>Для очных и внешних соревнований. Укажите баллы — места рассчитаются автоматически (при равенстве делятся). Место можно задать вручную.</p>
+</div></div>
+{% if c.results_published %}<div class="callout callout--warn mb3">{% icon 'lock' %}<span>Итоги опубликованы. Отзовите их на странице соревнования, чтобы изменить результаты.</span></div>{% endif %}
+<form method="post">
+  {% csrf_token %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Спортсмен</th><th>Город</th><th>Разряд</th><th>Баллы</th><th>Место (необяз.)</th></tr></thead>
+    <tbody>{% for r in regs %}<tr>
+      <td><div class="who">{% avatar r.athlete 'sm' %}<span><b>{{ r.athlete.full_name }}</b></span></div></td>
+      <td>{{ r.athlete.city }}</td><td>{{ r.athlete.qualification.short|default:"—" }}</td>
+      <td><input type="text" inputmode="decimal" name="score_{{ r.athlete_id }}" value="{% if r.res %}{{ r.res.score|floatformat:'-2' }}{% endif %}" placeholder="—" aria-label="Баллы" {% if c.results_published %}disabled{% endif %}></td>
+      <td><input type="number" min="1" name="place_{{ r.athlete_id }}" value="{{ r.res.place|default_if_none:'' }}" placeholder="авто" aria-label="Место" {% if c.results_published %}disabled{% endif %}></td>
+    </tr>{% empty %}<tr><td colspan="5"><div class="empty">Нет участников — добавьте спортсменов ниже.</div></td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% if regs and not c.results_published %}<div class="form-actions mt2"><button class="btn btn--primary btn--lg" type="submit">Сохранить результаты</button><a class="btn btn--ghost btn--lg" href="{% url 'panel:competition' c.pk %}?tab=results">Назад</a></div>{% endif %}
+</form>
+{% if not c.results_published %}
+<form method="post" action="{% url 'panel:participant_add' c.pk %}" class="card mt4 row" style="max-width:720px">
+  {% csrf_token %}<input type="hidden" name="back" value="manual">
+  <div class="grow field"><label for="add-athlete">Добавить участника</label><select id="add-athlete" name="athlete"><option value="">— выберите спортсмена —</option>{% for a in athletes %}<option value="{{ a.pk }}">{{ a.full_name }} · {{ a.city }}</option>{% endfor %}</select></div>
+  <button class="btn" type="submit" style="align-self:flex-end">{% icon 'plus' 'i--sm' %} Добавить</button>
+</form>
+{% endif %}
+{% endblock %}

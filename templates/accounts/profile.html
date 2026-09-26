@@ -1,0 +1,68 @@
+{% extends "base.html" %}{% load fsp %}
+{% block title %}Мой профиль{% endblock %}
+{% block content %}
+<div class="container">
+  {% include "accounts/_cover.html" %}
+  <div class="row row--between mt3">
+    <div class="tabs" style="margin:0;border:0">
+      <a href="?tab=overview" class="{% if tab == 'overview' %}is-active{% endif %}">{% icon 'user' 'i--sm' %} Обзор</a>
+      <a href="?tab=competitions" class="{% if tab == 'competitions' %}is-active{% endif %}">{% icon 'trophy' 'i--sm' %} Мои соревнования</a>
+      <a href="?tab=contests" class="{% if tab == 'contests' %}is-active{% endif %}">{% icon 'code' 'i--sm' %} Контесты и решения</a>
+    </div>
+    <a class="btn btn--sm btn--ghost" href="{% url 'accounts:settings' %}">{% icon 'settings' 'i--sm' %} Настройки</a>
+  </div>
+  <hr class="mt0">
+
+  {% if user.is_athlete and user.qualification and not user.qualification_verified and user.qualification.points %}
+  <div class="callout callout--warn mb3">{% icon 'alert' %}<span>Разряд <strong>«{{ user.qualification }}»</strong> ожидает подтверждения организатором — после проверки бонус +{{ user.qualification.points }} добавится к рейтингу.</span></div>
+  {% endif %}
+
+  {% if tab == 'overview' %}
+    {% if active_regs %}
+    <div class="card mb3" style="border-color:rgba(198,255,61,.3)">
+      <div class="card__head"><h3 class="card__title">{% icon 'bolt' 'accent' %} Активные соревнования</h3></div>
+      <div class="stack-sm">{% for r in active_regs %}{% with c=r.competition %}
+        <a class="res-item" href="{{ c.get_absolute_url }}">{% status_badge c %}<span><span class="res-item__title">{{ c.title }}</span><br><span class="res-item__sub">{% if c.is_running %}идёт до {{ c.end_at|date:"j E H:i" }}{% else %}старт {{ c.start_at|date:"j E в H:i" }}{% endif %}</span></span><span class="btn btn--sm {% if c.is_running %}btn--primary{% endif %}">{% if c.is_running %}Решать{% else %}Открыть{% endif %}</span></a>
+      {% endwith %}{% endfor %}</div>
+    </div>
+    {% endif %}
+    {% include "accounts/_overview.html" %}
+    {% if recommended %}
+    <div class="shead mt4"><div><span class="eyebrow">Рекомендуем</span><h2 style="font-size:22px">Открыта регистрация</h2></div></div>
+    <div class="grid g3">{% for c in recommended %}{% include "partials/ccard.html" %}{% endfor %}</div>
+    {% endif %}
+
+  {% elif tab == 'competitions' %}
+    <h2 style="font-size:22px">Текущие и предстоящие</h2>
+    {% if active_regs %}<div class="table-wrap mb4"><table class="table">
+      <thead><tr><th>Соревнование</th><th>Статус</th><th>Даты</th><th>Заявка</th><th></th></tr></thead>
+      <tbody>{% for r in active_regs %}{% with c=r.competition %}<tr><td><b>{{ c.title }}</b><br><small class="muted">{{ c.level.name }} · {{ c.discipline.name }}</small></td><td>{% status_badge c %}</td><td class="num" style="font-size:13px">{{ c.start_at|date:"d.m H:i" }} — {{ c.end_at|date:"d.m H:i" }}</td><td class="muted" style="font-size:13px">{{ r.created_at|date:"d.m.Y" }}</td><td class="tr"><a class="btn btn--sm" href="{{ c.get_absolute_url }}">Открыть</a></td></tr>{% endwith %}{% endfor %}</tbody>
+    </table></div>{% else %}<div class="panel-note mb4">Нет активных заявок. <a class="link" href="{% url 'competitions:list' %}">Найти соревнование</a></div>{% endif %}
+    <h2 style="font-size:22px">История участия</h2>
+    {% if past_regs %}<div class="table-wrap"><table class="table">
+      <thead><tr><th>Соревнование</th><th>Дата</th><th class="tc">Решений</th><th class="tc">Место</th><th class="tr">Баллы</th><th class="tr">Очки рейтинга</th></tr></thead>
+      <tbody>{% for r in past_regs %}{% with c=r.competition %}<tr><td><a href="{{ c.get_absolute_url }}"><b>{{ c.title }}</b></a><br><small class="muted">{{ c.level.name }}</small></td><td class="num" style="font-size:13px">{{ c.end_at|date:"d.m.Y" }}</td><td class="tc num">{{ r.subs }}</td>
+        {% if r.my_result and c.results_published %}{% with x=r.my_result %}<td class="tc"><span class="place {% if x.place <= 3 %}place--{{ x.place }}{% endif %}">{{ x.place }}</span></td><td class="tr num">{{ x.score|floatformat:"-1" }}</td><td class="tr num accent">+{{ x.rating_points|fnum }}</td>{% endwith %}
+        {% elif c.results_published %}<td class="tc muted" colspan="3">Без результата</td>
+        {% else %}<td class="tc" colspan="3"><span class="badge">Итоги подводятся</span></td>{% endif %}
+      </tr>{% endwith %}{% endfor %}</tbody>
+    </table></div>{% else %}<div class="panel-note">История участия пока пуста.</div>{% endif %}
+
+  {% else %}
+    <div class="grid" style="grid-template-columns:minmax(0,1fr) 340px">
+      <div>
+        <h2 style="font-size:22px">Мои отправки</h2>
+        {% if submissions %}<div class="hist">{% for s in submissions %}{% include "partials/sub_row.html" %}{% endfor %}</div>
+        {% else %}<div class="panel-note">Вы ещё не отправляли решений.</div>{% endif %}
+      </div>
+      <aside class="stack">
+        <div class="card"><h3 class="card__title mb2">Доступ к контестам</h3>
+          {% for r in active_regs %}{% with c=r.competition %}{% if c.has_contest %}
+            <a class="row row--between" style="padding:10px 0;border-bottom:1px solid var(--line)" href="{{ c.get_absolute_url }}"><span style="font-weight:700;font-size:14px">{{ c.title|truncatechars:34 }}</span>{% status_badge c %}</a>
+          {% endif %}{% endwith %}{% empty %}<p class="muted mb0">Нет активных контестов.</p>{% endfor %}
+        </div>
+      </aside>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

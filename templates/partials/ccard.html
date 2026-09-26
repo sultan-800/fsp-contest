@@ -1,0 +1,21 @@
+{% load fsp %}
+<a href="{{ c.get_absolute_url }}" class="ccard{% if c.is_running %} is-running{% endif %}{% if big %} ccard--big{% endif %}">
+  {% if c.pk in my_ids %}<span class="ccard__mine">Вы участник</span>{% endif %}
+  <div class="ccard__top">{% status_badge c %}<span class="chip">{{ c.discipline.code|default:"—" }}</span></div>
+  <div class="stack-sm">
+    <span class="ccard__level">{{ c.level.name }}</span>
+    <h3 class="ccard__title">{{ c.title }}</h3>
+    <p class="ccard__desc">{{ c.short_description }}</p>
+  </div>
+  {% if c.is_running %}
+    <div class="stack-sm">
+      <div class="row row--between"><span class="timer-mini">{% icon 'clock' 'i--sm' %}<span data-countdown="{{ c.end_at|date:'c' }}" data-mode="mini">—</span></span><span class="mono dim" style="font-size:12px">до финиша</span></div>
+      <div class="progress"><span style="width:{{ c.progress_percent }}%"></span></div>
+    </div>
+  {% endif %}
+  <div class="ccard__meta">
+    <span>{% icon 'calendar' %}{{ c.start_at|date:"j E, H:i" }}</span>
+    <span>{% icon 'clock' %}{{ c.duration_label }}</span>
+    <span>{% icon 'users' %}{{ c.participants_count }}</span>
+  </div>
+</a>

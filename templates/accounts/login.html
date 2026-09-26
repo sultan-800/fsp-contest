@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% load fsp %}
+{% block title %}Вход{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+<div class="auth">
+  {% include "accounts/_auth_art.html" with headline="С возвращением<br>на <span>старт.</span>" sub="Войдите, чтобы участвовать в соревнованиях, отправлять решения и следить за рейтингом." %}
+  <div class="auth__form"><div class="auth__box">
+    <span class="eyebrow">Авторизация</span>
+    <h1 class="mt2">Вход</h1>
+    <p class="muted mb3">Нет аккаунта? <a class="link" href="{% url 'accounts:register' %}">Зарегистрируйтесь</a></p>
+    <form method="post" class="form" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      {% include "partials/form_errors.html" %}
+      {% include "partials/field.html" with f=form.username %}
+      {% include "partials/field.html" with f=form.password %}
+      <button class="btn btn--primary btn--lg btn--block" type="submit" {% if locked %}disabled{% endif %}>Войти {% icon 'arrow-right' 'arrow' %}</button>
+    </form>
+    <div class="demo-creds">
+      <b style="color:var(--text)">Демо-доступ</b><br>
+      Организатор: <code>organizer</code> / <code>Organizer#2026</code><br>
+      Спортсмен: <code>ivanov</code> / <code>Athlete#2026</code>
+    </div>
+  </div></div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% load fsp %}
+{% block footer %}{% endblock %}
+{% block content %}
+<div class="plo">
+  <aside class="plo__side">
+    <nav class="side-nav" aria-label="Панель организатора">
+      <span class="side-nav__label" style="padding-top:0">Проведение</span>
+      <a href="{% url 'panel:dashboard' %}" class="{% if nav == 'dashboard' %}is-active{% endif %}">{% icon 'dashboard' %}Дашборд</a>
+      <a href="{% url 'panel:competitions' %}" class="{% if nav == 'competitions' %}is-active{% endif %}">{% icon 'trophy' %}Соревнования</a>
+      <a href="{% url 'panel:submissions' %}" class="{% if nav == 'submissions' %}is-active{% endif %}">{% icon 'inbox' %}Проверка решений{% if panel_pending %}<span class="count">{{ panel_pending }}</span>{% endif %}</a>
+      <a href="{% url 'panel:athletes' %}" class="{% if nav == 'athletes' %}is-active{% endif %}">{% icon 'users' %}Спортсмены</a>
+      <span class="side-nav__label">Справочники</span>
+      <a href="{% url 'panel:crud' 'disciplines' %}" class="{% if nav == 'disciplines' %}is-active{% endif %}">{% icon 'layers' %}Дисциплины</a>
+      <a href="{% url 'panel:crud' 'levels' %}" class="{% if nav == 'levels' %}is-active{% endif %}">{% icon 'bars' %}Уровни</a>
+      <a href="{% url 'panel:crud' 'qualifications' %}" class="{% if nav == 'qualifications' %}is-active{% endif %}">{% icon 'medal' %}Разряды</a>
+      <span class="side-nav__label">Инфоцентр</span>
+      <a href="{% url 'panel:crud' 'news' %}" class="{% if nav == 'news' %}is-active{% endif %}">{% icon 'news' %}Новости</a>
+      <a href="{% url 'panel:crud' 'documents' %}" class="{% if nav == 'documents' %}is-active{% endif %}">{% icon 'folder' %}Документы</a>
+      <a href="{% url 'panel:crud' 'faq' %}" class="{% if nav == 'faq' %}is-active{% endif %}">{% icon 'help' %}FAQ</a>
+    </nav>
+  </aside>
+  <div class="plo__main">{% block panel %}{% endblock %}</div>
+</div>
+{% endblock %}

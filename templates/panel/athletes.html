@@ -1,0 +1,22 @@
+{% extends "panel/_layout.html" %}{% load fsp %}
+{% block title %}Спортсмены{% endblock %}
+{% block panel %}
+<div class="plo__head"><div><span class="eyebrow">База спортсменов</span><h1>Спортсмены</h1><p>{{ page.paginator.count }} {{ page.paginator.count|plural:"запись,записи,записей" }}. Персональные данные доступны только организаторам.</p></div></div>
+<form class="filters mb3" method="get">
+  <label class="search">{% icon 'search' %}<input type="search" name="q" value="{{ q }}" placeholder="ФИО, логин, email, город"></label>
+  <div class="seg"><a href="{% qs f='' page='' %}" class="{% if not f %}is-active{% endif %}">Все</a><a href="{% qs f='unverified' page='' %}" class="{% if f == 'unverified' %}is-active{% endif %}">Разряд не подтверждён</a><a href="{% qs f='inactive' page='' %}" class="{% if f == 'inactive' %}is-active{% endif %}">Отключены</a></div>
+  <button class="btn" type="submit">Найти</button>
+</form>
+<div class="table-wrap"><table class="table">
+  <thead><tr><th>Спортсмен</th><th>Email</th><th>Город</th><th>Разряд</th><th class="tc">Заявок</th><th class="tr">Рейтинг</th><th></th></tr></thead>
+  <tbody>{% for a in page.object_list %}<tr>
+    <td><a class="who" href="{% url 'panel:athlete' a.pk %}">{% avatar a 'sm' %}<span><b>{{ a.full_name }}</b><small>@{{ a.username }}{% if not a.is_active %} · отключён{% endif %}</small></span></a></td>
+    <td style="font-size:13px">{{ a.email }}</td><td>{{ a.city|default:"—" }}</td>
+    <td>{% if a.qualification %}<span class="chip {% if a.qualification_verified %}chip--accent{% endif %}">{{ a.qualification.short }}{% if a.qualification_verified %} ✓{% else %} ?{% endif %}</span>{% else %}—{% endif %}</td>
+    <td class="tc num">{{ a.nregs }}</td>
+    <td class="tr"><span class="rating-val">{{ a.rating|fnum }}</span>{% if a.rating_position %}<br><small class="muted mono">#{{ a.rating_position }}</small>{% endif %}</td>
+    <td class="tr"><a class="btn btn--xs" href="{% url 'panel:athlete' a.pk %}">Открыть</a></td>
+  </tr>{% empty %}<tr><td colspan="7"><div class="empty">Никого не найдено</div></td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "partials/pager.html" %}
+{% endblock %}

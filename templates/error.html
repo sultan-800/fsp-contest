@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% load fsp %}
+{% block title %}{{ code }}{% endblock %}
+{% block content %}
+<div class="errpage"><div>
+  <div class="errpage__code">{{ code }}<span>{{ code }}</span></div>
+  <h1 style="font-size:28px">{{ title }}</h1>
+  <p class="muted">{{ text }}</p>
+  <div class="row" style="justify-content:center"><a class="btn btn--primary" href="/">На главную</a><a class="btn btn--ghost" href="/competitions/">Соревнования</a></div>
+</div></div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% load fsp %}
+<div class="mini-stats">
+  <div class="mini-stat"><b>{{ stats.competitions }}</b><small>стартов</small></div>
+  <div class="mini-stat"><b class="accent">{{ stats.wins }}</b><small>побед</small></div>
+  <div class="mini-stat"><b>{{ stats.podiums }}</b><small>призовых мест</small></div>
+  <div class="mini-stat"><b>{{ stats.best|default:"—" }}</b><small>лучшее место</small></div>
+</div>
+<div class="grid mt3" style="grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)">
+  <div class="card">
+    <div class="card__head"><h3 class="card__title">Динамика рейтинга</h3><span class="mono muted" style="font-size:12px">{{ history|length }} {{ history|length|plural:"изменение,изменения,изменений" }}</span></div>
+    {% if history_values %}{% sparkline history_values %}
+      <div class="hist-list">{% for h in history|slice:"-5:" reversed %}<div><span>{{ h.created_at|date:"d.m.Y" }} · {{ h.reason|truncatechars:48 }}</span><span class="{% if h.delta >= 0 %}up{% else %}down{% endif %}">{% if h.delta >= 0 %}+{% endif %}{{ h.delta|fnum }}</span></div>{% endfor %}</div>
+    {% else %}<div class="empty" style="padding:30px">{% icon 'chart' %}<p class="mb0">История появится после первого результата</p></div>{% endif %}
+  </div>
+  <div class="card">
+    <div class="card__head"><h3 class="card__title">Спортивный профиль</h3></div>
+    <dl class="dl">
+      <dt>Разряд</dt><dd>{{ athlete.qualification|default:"Без разряда" }}</dd>
+      {% if not limited %}
+      <dt>Дисциплины</dt><dd>{% for d in athlete.disciplines.all %}<span class="chip" style="margin:0 4px 4px 0">{{ d.code|default:d.name }}</span>{% empty %}—{% endfor %}</dd>
+      {% if athlete.bio %}<dt>О себе</dt><dd style="font-weight:500">{{ athlete.bio }}</dd>{% endif %}
+      {% endif %}
+      {% if is_own or viewer_is_org %}
+      <dt>Email</dt><dd>{{ athlete.email }} <span class="chip">{% icon 'lock' 'i--sm' %} скрыт</span></dd>
+      <dt>Дата рождения</dt><dd>{{ athlete.birth_date|date:"d.m.Y"|default:"—" }} <span class="chip">{% icon 'lock' 'i--sm' %} скрыта</span></dd>
+      {% endif %}
+    </dl>
+  </div>
+</div>
+<div class="card mt3">
+  <div class="card__head"><h3 class="card__title">Результаты выступлений</h3></div>
+  {% if results %}<div class="stack-sm">{% for r in results %}
+    <a class="res-item" href="{{ r.competition.get_absolute_url }}#results">
+      <span class="place {% if r.place <= 3 %}place--{{ r.place }}{% endif %}">{{ r.place }}</span>
+      <span><span class="res-item__title">{{ r.competition.title }}</span><br><span class="res-item__sub">{{ r.competition.level.name }} · {{ r.competition.end_at|date:"j E Y" }} · {{ r.score|floatformat:"-1" }} б. · из {{ r.participants_total }}</span></span>
+      <span class="res-item__pts">+{{ r.rating_points|fnum }}<small>очков</small></span>
+    </a>{% endfor %}</div>
+  {% else %}<div class="panel-note">Результатов пока нет.</div>{% endif %}
+</div>

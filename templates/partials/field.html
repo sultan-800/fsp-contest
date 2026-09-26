@@ -1,0 +1,13 @@
+<div class="field{% if f.errors %} has-error{% endif %}{% if span %} span-2{% endif %}">
+  {% if f.field.widget.allow_multiple_selected and f.field.widget.input_type == 'checkbox' %}
+    <span class="flabel">{{ f.label }}{% if f.field.required %} <span class="req">*</span>{% endif %}</span>
+    <div class="checks">{% for opt in f %}<label>{{ opt.tag }} {{ opt.choice_label }}</label>{% endfor %}</div>
+  {% elif f.field.widget.input_type == 'checkbox' %}
+    <label class="check">{{ f }} <span>{{ f.label }}</span></label>
+  {% else %}
+    <label for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} <span class="req">*</span>{% endif %}</label>
+    {{ f }}
+  {% endif %}
+  {% if f.help_text %}<span class="help">{{ f.help_text }}</span>{% endif %}
+  {% if f.errors %}<ul class="errors">{% for e in f.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+</div>

@@ -1,0 +1,32 @@
+{% extends "panel/_layout.html" %}{% load fsp %}
+{% block title %}{{ a.full_name }}{% endblock %}
+{% block panel %}
+<div class="plo__head"><div>
+  <div class="phead__crumbs" style="margin:0"><a href="{% url 'panel:athletes' %}">Спортсмены</a><span class="sep">/</span><span>{{ a.full_name }}</span></div>
+  <div class="row mt2" style="flex-wrap:nowrap">{% avatar a 'lg' %}<div><h1 style="margin:0">{{ a.full_name }}</h1><p style="margin:4px 0 0">@{{ a.username }} · зарегистрирован {{ a.date_joined|date:"d.m.Y" }}{% if a.consent_at %} · согласие на обработку ПД {{ a.consent_at|date:"d.m.Y H:i" }}{% endif %}</p></div></div>
+</div><a class="btn btn--ghost" href="{{ a.get_absolute_url }}">{% icon 'eye' 'i--sm' %} Публичный профиль</a></div>
+<div class="grid" style="grid-template-columns:minmax(0,1fr) 380px;align-items:start">
+  <div class="stack">
+    <div class="card"><h3 class="card__title mb2">Персональные данные {% icon 'lock' 'i--sm muted' %}</h3>
+      <dl class="dl"><dt>Email</dt><dd>{{ a.email }}</dd><dt>Дата рождения</dt><dd>{{ a.birth_date|date:"d.m.Y"|default:"—" }}</dd><dt>Город</dt><dd>{{ a.city|default:"—" }}</dd><dt>Учреждение</dt><dd>{{ a.institution|default:"—" }}</dd>
+      <dt>Дисциплины</dt><dd>{% for d in a.disciplines.all %}{{ d.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</dd>
+      <dt>Рейтинг</dt><dd>{{ a.rating|fnum }}{% if a.rating_position %} (#{{ a.rating_position }}){% endif %}</dd></dl>
+    </div>
+    <div class="card card--flush"><div class="card__head card__head--bar"><h3 class="card__title">Результаты</h3></div>
+      {% for r in results %}<a class="qrow" href="{% url 'panel:competition' r.competition.pk %}?tab=results"><span class="place {% if r.place <= 3 %}place--{{ r.place }}{% endif %}">{{ r.place }}</span><span>{{ r.competition.title }}</span><span class="mono">{{ r.score|floatformat:"-1" }} б.</span><span class="mono accent">+{{ r.rating_points|fnum }}</span></a>{% empty %}<div class="empty">Нет результатов</div>{% endfor %}
+    </div>
+    <div class="card card--flush"><div class="card__head card__head--bar"><h3 class="card__title">Заявки</h3></div>
+      {% for r in regs %}<a class="qrow" href="{% url 'panel:competition' r.competition.pk %}?tab=participants"><span class="chip">#{{ r.competition.pk }}</span><span>{{ r.competition.title }}</span><span class="mono dim" style="font-size:12px">{{ r.created_at|date:"d.m.Y" }}</span><span>{% status_badge r.competition %}</span></a>{% empty %}<div class="empty">Нет заявок</div>{% endfor %}
+    </div>
+  </div>
+  <form method="post" class="card form" novalidate>
+    {% csrf_token %}
+    <h3 class="card__title">Квалификация и доступ</h3>
+    <p class="help mb0">Подтверждённый разряд добавляет бонус Q к рейтингу. Изменение автоматически пересчитывает рейтинг.</p>
+    {% include "partials/field.html" with f=form.qualification %}
+    {% include "partials/field.html" with f=form.qualification_verified %}
+    {% include "partials/field.html" with f=form.is_active %}
+    <button class="btn btn--primary" type="submit">Сохранить</button>
+  </form>
+</div>
+{% endblock %}

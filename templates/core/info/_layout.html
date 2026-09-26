@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% load fsp %}
+{% block content %}
+<div class="container">
+  <div class="phead">
+    <div class="phead__crumbs"><a href="{% url 'core:home' %}">Главная</a><span class="sep">/</span><a href="{% url 'core:info' %}">Инфоцентр</a>{% block crumbs %}{% endblock %}</div>
+    {% block head_block %}{% endblock %}
+  </div>
+  <div class="info-layout">
+    <nav class="side-nav" aria-label="Разделы инфоцентра">
+      <a href="{% url 'core:info' %}" class="{% if section == 'index' %}is-active{% endif %}">{% icon 'grid' %}Обзор</a>
+      <a href="{% url 'core:news' %}" class="{% if section == 'news' %}is-active{% endif %}">{% icon 'news' %}Новости</a>
+      <a href="{% url 'core:calendar' %}" class="{% if section == 'calendar' %}is-active{% endif %}">{% icon 'calendar' %}Календарь</a>
+      <a href="{% url 'core:documents' %}" class="{% if section == 'documents' %}is-active{% endif %}">{% icon 'folder' %}Документы</a>
+      <a href="{% url 'core:faq' %}" class="{% if section == 'faq' %}is-active{% endif %}">{% icon 'help' %}FAQ</a>
+      <span class="side-nav__label">Быстрые ссылки</span>
+      <a href="{% url 'core:documents' %}?cat=regulation">{% icon 'file' %}Положения</a>
+      <a href="{% url 'core:documents' %}?cat=rules">{% icon 'shield' %}Правила</a>
+      <a href="{% url 'core:documents' %}?cat=material">{% icon 'book' %}Материалы</a>
+      <a href="{% url 'rating:index' %}#method">{% icon 'chart' %}Методика рейтинга</a>
+    </nav>
+    <div>{% block info %}{% endblock %}</div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+db.sqlite3
+.secret_key
+private_media/
+staticfiles/*
+!staticfiles/.gitkeep
+.env
+.idea/

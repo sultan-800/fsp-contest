@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% load fsp %}
+{% block title %}Уведомления{% endblock %}
+{% block content %}
+<div class="container container--narrow">
+  <div class="phead"><div class="phead__row"><div><h1>Уведомления</h1><p>Регистрации, проверка решений и итоги соревнований.</p></div>
+    {% if unread_notifications %}<form method="post" action="{% url 'core:notifications_read' %}">{% csrf_token %}<button class="btn btn--sm" type="submit">{% icon 'check' 'i--sm' %} Отметить все прочитанными</button></form>{% endif %}</div></div>
+  <div class="card card--flush">
+    {% for n in items %}
+      <a class="qrow" href="{% url 'core:notification_open' n.pk %}" style="{% if not n.is_read %}background:rgba(198,255,61,.04){% endif %}">
+        <span class="chip {% if not n.is_read %}chip--accent{% endif %}">{% if n.kind == 'review' %}{% icon 'check-circle' 'i--sm' %}{% elif n.kind == 'result' %}{% icon 'trophy' 'i--sm' %}{% elif n.kind == 'start' %}{% icon 'play' 'i--sm' %}{% else %}{% icon 'bell' 'i--sm' %}{% endif %}</span>
+        <span style="{% if not n.is_read %}font-weight:700{% endif %}">{{ n.text }}</span>
+        <span class="mono dim" style="font-size:12px">{{ n.created_at|date:"d.m H:i" }}</span>
+        {% icon 'chevron-right' 'muted' %}
+      </a>
+    {% empty %}<div class="empty">{% icon 'bell' %}<h3>Уведомлений нет</h3></div>{% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "core/info/_layout.html" %}{% load fsp %}
+{% block title %}Документы и материалы{% endblock %}
+{% block crumbs %}<span class="sep">/</span><span>Документы</span>{% endblock %}
+{% block head_block %}<h1>Документы и материалы</h1><p>Положения о соревнованиях, правила, официальные документы и полезные материалы для подготовки.</p>{% endblock %}
+{% block info %}
+<div class="seg mb3"><a href="?" class="{% if not cat %}is-active{% endif %}">Все</a>{% for v, l in categories %}<a href="?cat={{ v }}" class="{% if cat == v %}is-active{% endif %}">{{ l }}</a>{% endfor %}</div>
+{% for g in groups %}
+  <h2 class="mt3" style="font-size:20px">{{ g.label }}</h2>
+  <div class="stack-sm">{% for d in g.items %}{% include "core/info/_doc_item.html" %}{% endfor %}</div>
+{% empty %}<div class="card empty">{% icon 'folder' %}<h3>Документов нет</h3></div>{% endfor %}
+{% endblock %}

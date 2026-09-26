@@ -1,0 +1,10 @@
+{% extends "core/info/_layout.html" %}{% load fsp %}
+{% block title %}Вопросы и ответы{% endblock %}
+{% block crumbs %}<span class="sep">/</span><span>FAQ</span>{% endblock %}
+{% block head_block %}<h1>Вопросы и ответы</h1><p>Не нашли ответ? Напишите организатору соревнования.</p>{% endblock %}
+{% block info %}
+{% for cat, items in groups.items %}
+  <h2 class="{% if not forloop.first %}mt4{% endif %}" style="font-size:20px">{{ cat }}</h2>
+  {% for i in items %}<details class="faq-item" {% if forloop.parentloop.first and forloop.first %}open{% endif %}><summary>{{ i.question }}</summary><div class="prose">{{ i.answer|markup }}</div></details>{% endfor %}
+{% endfor %}
+{% endblock %}

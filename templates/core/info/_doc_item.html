@@ -1,0 +1,5 @@
+{% load fsp %}<a class="doc-item" href="{{ d.get_absolute_url }}">
+  <span class="doc-item__ico">{% if d.file %}{{ d.file_ext|default:"FILE" }}{% elif d.url %}{% icon 'external' %}{% else %}{% icon 'file' %}{% endif %}</span>
+  <span><b>{{ d.title }}</b><small>{{ d.get_category_display }}{% if d.description %} · {{ d.description|truncatechars:90 }}{% endif %}</small></span>
+  {% icon 'chevron-right' 'muted' %}
+</a>

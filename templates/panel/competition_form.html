@@ -1,0 +1,54 @@
+{% extends "panel/_layout.html" %}{% load fsp %}
+{% block title %}{% if c %}Редактирование{% else %}Новое соревнование{% endif %}{% endblock %}
+{% block panel %}
+<div class="plo__head"><div>
+  <div class="phead__crumbs" style="margin:0"><a href="{% url 'panel:competitions' %}">Соревнования</a><span class="sep">/</span>{% if c %}<a href="{% url 'panel:competition' c.pk %}">{{ c.title|truncatechars:40 }}</a><span class="sep">/</span><span>Редактирование</span>{% else %}<span>Новое</span>{% endif %}</div>
+  <h1>{% if c %}Параметры соревнования{% else %}Новое соревнование{% endif %}</h1>
+  {% if not c %}<p>Шаг 1 из 3: параметры → задания → публикация. Соревнование создаётся как черновик.</p>{% endif %}
+</div></div>
+<form method="post" class="form" novalidate style="max-width:980px">
+  {% csrf_token %}
+  {% include "partials/form_errors.html" %}
+  <div class="card card--pad-lg">
+    <div class="form-section__title">Основное</div>
+    <div class="form-grid">
+      {% include "partials/field.html" with f=form.title span=1 %}
+      {% include "partials/field.html" with f=form.short_description span=1 %}
+      {% include "partials/field.html" with f=form.discipline %}
+      {% include "partials/field.html" with f=form.level %}
+      {% include "partials/field.html" with f=form.format %}
+      {% include "partials/field.html" with f=form.location %}
+    </div>
+  </div>
+  <div class="card card--pad-lg">
+    <div class="form-section__title">Даты и время (МСК)</div>
+    <div class="form-grid">
+      {% include "partials/field.html" with f=form.start_at %}
+      {% include "partials/field.html" with f=form.end_at %}
+      {% include "partials/field.html" with f=form.registration_start %}
+      {% include "partials/field.html" with f=form.registration_end %}
+      {% include "partials/field.html" with f=form.max_participants %}
+    </div>
+    <p class="help mt2">Статус меняется автоматически: «Опубликован» → «Идёт» в момент начала → «Завершён» в момент окончания. Запустить или завершить досрочно можно на странице управления.</p>
+  </div>
+  <div class="card card--pad-lg">
+    <div class="form-section__title">Проведение</div>
+    <div class="form-grid">
+      {% include "partials/field.html" with f=form.has_contest span=1 %}
+      {% include "partials/field.html" with f=form.max_attempts %}
+      <div class="field" style="justify-content:flex-end">{% include "partials/field.html" with f=form.show_live_standings %}</div>
+      {% include "partials/field.html" with f=form.external_platform %}
+      {% include "partials/field.html" with f=form.external_url %}
+    </div>
+  </div>
+  <div class="card card--pad-lg">
+    <div class="form-section__title">Описание и правила</div>
+    <div class="form-grid">
+      {% include "partials/field.html" with f=form.description span=1 %}
+      {% include "partials/field.html" with f=form.rules span=1 %}
+    </div>
+    <p class="help">Разметка: <code>## Заголовок</code>, <code>- пункт списка</code>, <code>**жирный**</code>, <code>`код`</code>, блоки кода в <code>```</code>.</p>
+  </div>
+  <div class="form-actions"><button class="btn btn--primary btn--lg" type="submit">{% if c %}Сохранить{% else %}Создать и перейти к заданиям {% icon 'arrow-right' 'arrow' %}{% endif %}</button><a class="btn btn--ghost btn--lg" href="{% if c %}{% url 'panel:competition' c.pk %}{% else %}{% url 'panel:competitions' %}{% endif %}">Отмена</a></div>
+</form>
+{% endblock %}

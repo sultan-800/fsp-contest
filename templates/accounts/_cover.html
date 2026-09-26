@@ -1,0 +1,23 @@
+{% load fsp %}
+<div class="pcover">
+  <div class="pcover__bg"></div>
+  <div class="pcover__body">
+    {% avatar athlete 'xl' %}
+    <div>
+      <h1>{{ athlete.full_name|default:athlete.username }}</h1>
+      <div class="pcover__tags">
+        {% if athlete.qualification %}<span class="chip {% if athlete.qualification_verified %}chip--accent{% endif %}">{{ athlete.qualification.short }}{% if athlete.qualification_verified %} ✓ подтверждён{% else %} · на проверке{% endif %}</span>{% endif %}
+        {% if not limited %}
+          {% if athlete.city %}<span>{% icon 'pin' 'i--sm' %}{{ athlete.city }}</span>{% endif %}
+          {% if athlete.institution and athlete.show_institution or athlete.institution and is_own or athlete.institution and viewer_is_org %}<span>{% icon 'book' 'i--sm' %}{{ athlete.institution }}</span>{% endif %}
+        {% endif %}
+        <span class="mono dim" style="font-size:12px">на платформе с {{ athlete.date_joined|date:"E Y" }}</span>
+      </div>
+    </div>
+    <div class="rating-box">
+      <div class="rating-box__lbl">Рейтинг</div>
+      <div class="rating-box__val">{{ athlete.rating|fnum }}</div>
+      <div class="rating-box__pos">{% if athlete.rating_position %}#{{ athlete.rating_position }} в общем зачёте{% else %}пока вне рейтинга{% endif %}</div>
+    </div>
+  </div>
+</div>

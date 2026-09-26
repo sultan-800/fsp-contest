@@ -1,0 +1,18 @@
+{% extends "panel/_layout.html" %}{% load fsp %}
+{% block title %}{{ cfg.title }}{% endblock %}
+{% block panel %}
+<div class="plo__head"><div>
+  <div class="phead__crumbs" style="margin:0"><a href="{% url 'panel:crud' key %}">{{ cfg.title }}</a><span class="sep">/</span><span>{% if obj %}Редактирование{% else %}Новая запись{% endif %}</span></div>
+  <h1>{% if obj %}{{ obj }}{% else %}Добавить {{ cfg.one }}{% endif %}</h1>
+</div></div>
+<form method="post" enctype="multipart/form-data" class="card card--pad-lg form" novalidate style="max-width:860px">
+  {% csrf_token %}
+  {% include "partials/form_errors.html" %}
+  {% for f in form %}
+    {% if f.name == 'file' %}
+      <div class="field"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{% if obj.file %}<span class="chip mb1">{% icon 'file' 'i--sm' %} текущий файл: {{ obj.file_ext }}</span>{% endif %}<input type="file" name="{{ f.html_name }}" id="{{ f.id_for_label }}">{% if obj.file %}<label class="check mt1"><input type="checkbox" name="{{ f.html_name }}-clear"> <span>Удалить текущий файл</span></label>{% endif %}<span class="help">До 10 МБ: PDF, DOCX, XLSX, PPTX, ZIP, изображения</span>{% if f.errors %}<ul class="errors">{% for e in f.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+    {% else %}{% include "partials/field.html" %}{% endif %}
+  {% endfor %}
+  <div class="form-actions"><button class="btn btn--primary btn--lg" type="submit">Сохранить</button><a class="btn btn--ghost btn--lg" href="{% url 'panel:crud' key %}">Отмена</a></div>
+</form>
+{% endblock %}

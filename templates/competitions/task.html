@@ -1,0 +1,104 @@
+{% extends "base.html" %}{% load fsp %}
+{% block title %}{{ task.letter }}. {{ task.title }} — {{ c.title }}{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+<div class="arena-top">
+  <div class="container arena-top__in" style="max-width:none">
+    <a class="btn btn--ghost btn--sm" href="{{ c.get_absolute_url }}">{% icon 'arrow-left' 'i--sm' %} К соревнованию</a>
+    <span class="arena-top__title">{{ c.title }}</span>
+    {% status_badge c %}
+    <span class="grow"></span>
+    {% if reg %}<span class="arena-top__score">Мои баллы <b>{{ my_total }}</b> / {{ total_max }}</span>{% endif %}
+    {% if c.is_running %}<span class="timer-mini" style="font-size:16px">{% icon 'clock' %}<span data-countdown="{{ c.end_at|date:'c' }}" data-mode="mini" data-reload="1">—</span></span>{% endif %}
+  </div>
+</div>
+
+<div class="arena">
+  <!-- ============ навигация по задачам -->
+  <nav class="arena__nav" aria-label="Задачи">
+    {% for t in tasks %}
+      <a href="{{ t.get_absolute_url }}" class="{% if t.pk == task.pk %}is-active{% endif %}" title="{{ t.letter }}. {{ t.title }}">{{ t.letter }}
+        {% if t.my %}<i class="{% if t.my.best == t.max_score %}full{% elif t.my.best %}partial{% elif t.my.pending %}pending{% else %}zero{% endif %}"></i>{% endif %}</a>
+    {% endfor %}
+  </nav>
+
+  <!-- ============ условие -->
+  <article class="arena__statement">
+    <div class="eyebrow mb2">Задача {{ task.letter }} из {{ tasks|length }}</div>
+    <h1>{{ task.letter }}. {{ task.title }}</h1>
+    <div class="arena__meta">
+      <span class="chip chip--accent">{% icon 'target' 'i--sm' %} {{ task.max_score }} баллов</span>
+      {% if task.limits %}<span class="chip">{% icon 'cpu' 'i--sm' %} {{ task.limits }}</span>{% endif %}
+      <span class="chip">{% icon 'refresh' 'i--sm' %} {{ c.max_attempts }} попыток</span>
+    </div>
+    <div class="prose">{{ task.statement|markup }}</div>
+    {% if task.input_spec %}<div class="st-block"><h3>Входные данные</h3><div class="prose">{{ task.input_spec|markup }}</div></div>{% endif %}
+    {% if task.output_spec %}<div class="st-block"><h3>Выходные данные</h3><div class="prose">{{ task.output_spec|markup }}</div></div>{% endif %}
+    {% if task.sample_input or task.sample_output %}
+    <div class="st-block"><h3>Пример</h3>
+      <div class="samples">
+        <div class="sample"><div class="sample__h">stdin <button type="button" data-copy="si">копировать</button></div><pre id="si">{{ task.sample_input }}</pre></div>
+        <div class="sample"><div class="sample__h">stdout <button type="button" data-copy="so">копировать</button></div><pre id="so">{{ task.sample_output }}</pre></div>
+      </div>
+    </div>{% endif %}
+    {% if task.notes %}<div class="st-block"><h3>Примечание</h3><div class="prose">{{ task.notes|markup }}</div></div>{% endif %}
+    {% if task.attachment or task.link %}
+    <div class="st-block"><h3>Материалы</h3><div class="row">
+      {% if task.attachment %}<a class="btn btn--sm" href="{% url 'competitions:task_attachment' c.pk task.letter %}">{% icon 'download' 'i--sm' %} {{ task.attachment_name|default:"Файл задания" }}</a>{% endif %}
+      {% if task.link %}<a class="btn btn--sm" href="{{ task.link }}" target="_blank" rel="noopener noreferrer">{% icon 'external' 'i--sm' %} Ссылка на материалы</a>{% endif %}
+    </div></div>{% endif %}
+    <div class="row row--between mt4">
+      {% if prev_task %}<a class="btn btn--ghost" href="{{ prev_task.get_absolute_url }}">{% icon 'arrow-left' 'i--sm' %} {{ prev_task.letter }}. {{ prev_task.title|truncatechars:24 }}</a>{% else %}<span></span>{% endif %}
+      {% if next_task %}<a class="btn btn--ghost" href="{{ next_task.get_absolute_url }}">{{ next_task.letter }}. {{ next_task.title|truncatechars:24 }} {% icon 'arrow-right' 'i--sm' %}</a>{% endif %}
+    </div>
+  </article>
+
+  <!-- ============ рабочая зона -->
+  <section class="arena__work">
+    {% if can_submit %}
+    <form method="post" action="{% url 'competitions:submit' c.pk task.letter %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="row row--between mb2"><h2 style="font-size:20px;margin:0">Отправить решение</h2>
+        {% if c.max_attempts <= 20 %}<div class="attempts" title="Использовано попыток: {{ attempts_used }} из {{ c.max_attempts }}">{% for i in "x"|rjust:c.max_attempts|make_list %}<i class="{% if forloop.counter <= attempts_used %}used{% endif %}"></i>{% endfor %}</div>{% else %}<span class="mono muted">{{ attempts_used }} / {{ c.max_attempts }}</span>{% endif %}
+      </div>
+      <div class="pane-tabs" data-submit-modes>
+        <button type="button" class="is-active" data-mode="code">{% icon 'code' 'i--sm' %} Код в редакторе</button>
+        <button type="button" data-mode="file">{% icon 'upload' 'i--sm' %} Загрузить файл</button>
+      </div>
+      <div data-mode-pane="code">
+        <div class="editor">
+          <div class="editor__bar">
+            <label class="sr-only" for="id_language">Язык</label>{{ form.language }}
+            <span class="editor__info" data-editor-info>Стр 1, Кол 1</span>
+          </div>
+          <div class="editor__body"><div class="editor__gutter" data-gutter>1</div>{{ form.code }}</div>
+        </div>
+      </div>
+      <div data-mode-pane="file" hidden>
+        <label class="dropzone">
+          {% icon 'upload' %}<b>Перетащите файл с решением</b><small>или нажмите для выбора · до {{ max_kb }} КБ · .py .cpp .java .cs .go .kt .js .pas .txt …</small>
+          <span class="dropzone__file" data-file-name></span>
+          {{ form.file }}
+        </label>
+        <p class="help mt1">Язык для файла: выберите во вкладке «Код в редакторе» или он будет определён организатором.</p>
+      </div>
+      <div class="submit-bar">
+        <span class="help">{% icon 'info' 'i--sm' %} Решение проверяет организатор вручную. Засчитывается лучшая попытка. <span class="mono">Ctrl+Enter</span> — отправить.</span>
+        <button class="btn btn--primary btn--lg" type="submit">{% icon 'send' %} Отправить</button>
+      </div>
+    </form>
+    {% else %}
+      <div class="locked">{% icon 'lock' %}<div><h3>Отправка недоступна</h3><p>{{ why }}</p>
+        {% if not user.is_authenticated %}<a class="btn btn--primary btn--sm mt2" href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">Войти</a>{% endif %}</div></div>
+    {% endif %}
+
+    {% if reg %}
+    <div class="mt4" id="history">
+      <div class="row row--between mb2"><h2 style="font-size:18px;margin:0">История отправок · {{ task.letter }}</h2><span class="mono muted" style="font-size:12px">{{ attempts_used }} / {{ c.max_attempts }}</span></div>
+      {% if my_subs %}<div class="hist">{% for s in my_subs %}{% include "partials/sub_row.html" %}{% endfor %}</div>
+      {% else %}<div class="panel-note">По этой задаче ещё нет отправок.</div>{% endif %}
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

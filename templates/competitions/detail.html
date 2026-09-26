@@ -1,0 +1,186 @@
+{% extends "base.html" %}{% load fsp %}
+{% block title %}{{ c.title }}{% endblock %}
+{% block content %}
+<section class="chero{% if c.is_running %} is-running{% endif %}">
+  <div class="container chero__grid">
+    <div>
+      <div class="phead__crumbs"><a href="{% url 'core:home' %}">Главная</a><span class="sep">/</span><a href="{% url 'competitions:list' %}">Соревнования</a><span class="sep">/</span><span>#{{ c.pk }}</span></div>
+      <div class="row">{% status_badge c 'lg' %}<span class="chip chip--blue">{{ c.level.name }}</span><span class="chip">{{ c.discipline.name }}</span>{% if not c.has_contest %}<span class="chip">Результаты вносятся организатором</span>{% endif %}</div>
+      <h1>{{ c.title }}</h1>
+      <p class="chero__lead">{{ c.short_description }}</p>
+      <dl class="facts">
+        <div><dt>{% icon 'calendar' %}Дата</dt><dd>{{ c.start_at|date:"j E Y" }}</dd></div>
+        <div><dt>{% icon 'clock' %}Время (МСК)</dt><dd>{{ c.start_at|date:"H:i" }} — {{ c.end_at|date:"H:i" }}{% if c.start_at|date:"Ymd" != c.end_at|date:"Ymd" %} <span class="muted">({{ c.end_at|date:"j.m" }})</span>{% endif %}</dd></div>
+        <div><dt>{% icon 'target' %}Длительность</dt><dd>{{ c.duration_label }}</dd></div>
+        <div><dt>{% icon 'users' %}Участники</dt><dd>{{ participants }}{% if c.max_participants %} / {{ c.max_participants }}{% endif %}</dd></div>
+        <div><dt>{% icon 'pin' %}Формат</dt><dd>{{ c.get_format_display }}</dd></div>
+        <div><dt>{% icon 'layers' %}Заданий</dt><dd>{{ tasks_count }}{% if total_max %} <span class="muted">· {{ total_max }} б.</span>{% endif %}</dd></div>
+        <div><dt>{% icon 'refresh' %}Попыток</dt><dd>{% if c.has_contest %}до {{ c.max_attempts }} на задачу{% else %}—{% endif %}</dd></div>
+        <div><dt>{% icon 'chart' %}Коэф. рейтинга</dt><dd>×{{ c.level.coefficient }}</dd></div>
+      </dl>
+      {% if c.external_url %}<a class="link mt2" href="{{ c.external_url }}" target="_blank" rel="noopener noreferrer">{% icon 'external' 'i--sm' %} Связанное соревнование на {{ c.external_platform|default:"внешней платформе" }}</a>{% endif %}
+    </div>
+
+    <!-- ============ ПАНЕЛЬ ДЕЙСТВИЯ (главный элемент) -->
+    <aside class="action-card{% if c.is_running %} is-running{% endif %}">
+      {% if c.is_running %}
+        <div class="action-card__lbl">До окончания тура</div>
+        <div class="countdown countdown--accent" data-countdown="{{ c.end_at|date:'c' }}" data-reload="1">
+          <div class="countdown__unit" data-unit="d"><span class="countdown__num" data-u="d">00</span><span class="countdown__lbl">дн</span></div>
+          <div class="countdown__unit"><span class="countdown__num" data-u="h">00</span><span class="countdown__lbl">час</span></div><span class="countdown__sep">:</span>
+          <div class="countdown__unit"><span class="countdown__num" data-u="m">00</span><span class="countdown__lbl">мин</span></div><span class="countdown__sep">:</span>
+          <div class="countdown__unit"><span class="countdown__num" data-u="s">00</span><span class="countdown__lbl">сек</span></div>
+        </div>
+        <div class="progress mt2"><span style="width:{{ c.progress_percent }}%"></span></div>
+      {% elif c.is_upcoming %}
+        <div class="action-card__lbl">До старта</div>
+        <div class="countdown" data-countdown="{{ c.start_at|date:'c' }}" data-reload="1">
+          <div class="countdown__unit" data-unit="d"><span class="countdown__num" data-u="d">00</span><span class="countdown__lbl">дн</span></div>
+          <div class="countdown__unit"><span class="countdown__num" data-u="h">00</span><span class="countdown__lbl">час</span></div><span class="countdown__sep">:</span>
+          <div class="countdown__unit"><span class="countdown__num" data-u="m">00</span><span class="countdown__lbl">мин</span></div><span class="countdown__sep">:</span>
+          <div class="countdown__unit"><span class="countdown__num" data-u="s">00</span><span class="countdown__lbl">сек</span></div>
+        </div>
+      {% elif c.status == 'draft' %}
+        <div class="action-card__lbl">Черновик</div><p class="muted mb0">Соревнование не опубликовано и видно только организатору.</p>
+      {% else %}
+        <div class="action-card__lbl">Соревнование завершено</div>
+        {% if my_result %}
+          <div class="action-card__score"><b>{{ my_result.place }}</b><span class="muted">место из {{ my_result.participants_total }}</span></div>
+          <p class="muted mb0 mt1">{{ my_result.score|floatformat:"-1" }} баллов · +{{ my_result.rating_points|fnum }} к рейтингу</p>
+        {% elif c.results_published %}<p class="muted mb0">Итоги подведены {{ c.results_published_at|date:"j E Y" }}.</p>
+        {% else %}<p class="muted mb0">Организатор проверяет решения и подводит итоги.</p>{% endif %}
+      {% endif %}
+
+      {% if is_org %}
+        <a class="btn btn--primary btn--lg btn--block" href="{% url 'panel:competition' c.pk %}">{% icon 'dashboard' %} Управлять соревнованием</a>
+      {% elif not user.is_authenticated %}
+        {% if reg_open %}<a class="btn btn--primary btn--lg btn--block" href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">Войти и участвовать {% icon 'arrow-right' 'arrow' %}</a>{% endif %}
+        {% if c.is_running or c.is_finished %}{% if tasks %}<a class="btn btn--ghost btn--block" href="#tasks">Смотреть задания</a>{% endif %}{% endif %}
+      {% elif reg %}
+        {% if c.is_running and c.has_contest %}
+          <div class="row row--between mt2"><span class="muted">Мои баллы</span><span class="mono" style="font-weight:800;font-size:20px;color:var(--accent)">{{ my_total }} <span class="dim" style="font-size:13px">/ {{ total_max }}</span></span></div>
+          {% if tasks %}<a class="btn btn--primary btn--xl btn--block" href="{{ tasks.0.get_absolute_url }}">{% icon 'code' %} Решать задачи</a>{% endif %}
+        {% elif c.is_upcoming %}
+          <div class="callout callout--accent mt2">{% icon 'check-circle' %}<span><strong>Вы зарегистрированы.</strong> Задания откроются в момент старта.</span></div>
+          <form method="post" action="{% url 'competitions:unregister' c.pk %}" data-confirm="Отозвать заявку на участие?">{% csrf_token %}<button class="btn btn--ghost btn--block btn--sm" type="submit">Отозвать заявку</button></form>
+        {% elif c.is_finished and c.has_contest and tasks %}
+          <a class="btn btn--ghost btn--block" href="#tasks">Задания и мои решения</a>
+        {% endif %}
+      {% elif user.is_athlete %}
+        {% if reg_open %}
+          <form method="post" action="{% url 'competitions:register' c.pk %}">{% csrf_token %}<button class="btn btn--primary btn--xl btn--block" type="submit">{% icon 'flag' %} Зарегистрироваться</button></form>
+          {% if c.registration_end %}<p class="help mt1 tc">Регистрация до {{ c.registration_end|date:"j E, H:i" }}</p>{% endif %}
+        {% else %}
+          <div class="panel-note mt2">{% icon 'lock' 'i--sm' %} {{ reg_reason }}</div>
+        {% endif %}
+      {% endif %}
+    </aside>
+  </div>
+</section>
+
+<nav class="subnav" aria-label="Разделы соревнования"><div class="container"><div class="tabs">
+  <a href="#about" class="is-active">Описание</a>
+  {% if c.has_contest %}<a href="#tasks">Задания{% if tasks %} · {{ tasks|length }}{% endif %}</a>{% endif %}
+  {% if reg and c.has_contest %}<a href="#mine">Мои решения</a>{% endif %}
+  <a href="#results">{% if c.results_published %}Итоги{% else %}Таблица{% endif %}</a>
+  {% if c.rules %}<a href="#rules">Правила</a>{% endif %}
+</div></div></nav>
+
+<div class="container cgrid">
+  <div>
+    <section class="csec" id="about">
+      <div class="csec__head"><h2><span class="n">01</span>О соревновании</h2></div>
+      <div class="prose">{% if c.description %}{{ c.description|markup }}{% else %}<p>{{ c.short_description }}</p>{% endif %}</div>
+    </section>
+
+    {% if c.has_contest %}
+    <section class="csec" id="tasks">
+      <div class="csec__head"><h2><span class="n">02</span>Задания</h2>{% if tasks %}<span class="mono muted">макс. {{ total_max }} баллов</span>{% endif %}</div>
+      {% if tasks %}
+        <div class="tasklist">
+          {% for t in tasks %}
+          <a class="trow {% if t.my %}{% if t.my.best == t.max_score %}is-full{% elif t.my.best %}is-partial{% elif t.my.pending %}is-pending{% endif %}{% endif %}" href="{{ t.get_absolute_url }}">
+            <span class="trow__letter">{{ t.letter }}</span>
+            <span><span class="trow__title">{{ t.title }}</span><span class="trow__sub">{{ t.limits|default:"" }}{% if t.attachment or t.link %} · есть материалы{% endif %}</span></span>
+            <span class="trow__score">{% if t.my %}{% if t.my.best is not None %}{{ t.my.best }}{% else %}—{% endif %} / {{ t.max_score }}<small>{% if t.my.pending %}на проверке: {{ t.my.pending }}{% else %}попыток: {{ t.my.attempts }}{% endif %}</small>{% else %}{{ t.max_score }}<small>баллов</small>{% endif %}</span>
+            <span class="btn btn--sm {% if c.is_running and reg %}btn--primary{% else %}btn--ghost{% endif %}">{% if c.is_running and reg %}Решать{% else %}Открыть{% endif %} {% icon 'arrow-right' 'arrow i--sm' %}</span>
+          </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="locked">{% icon 'lock' %}<div><h3>Задания скрыты до старта</h3><p>Они станут доступны {{ c.start_at|date:"j E в H:i" }} (МСК). {% if not reg and user.is_athlete and reg_open %}Не забудьте зарегистрироваться.{% endif %}</p></div></div>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {% if reg and c.has_contest %}
+    <section class="csec" id="mine">
+      <div class="csec__head"><h2><span class="n">03</span>Мои решения</h2></div>
+      {% if recent_subs %}
+        <div class="hist">{% for s in recent_subs %}{% include "partials/sub_row.html" %}{% endfor %}</div>
+      {% else %}<div class="panel-note">Вы ещё не отправляли решений.</div>{% endif %}
+    </section>
+    {% endif %}
+
+    <section class="csec" id="results">
+      <div class="csec__head">
+        <h2><span class="n">04</span>{% if standings_mode == 'final' or results %}Итоговая таблица{% elif standings_mode == 'live' %}Текущая таблица{% else %}Результаты{% endif %}</h2>
+        <div class="row">
+          {% if standings_mode == 'live' %}<span class="badge st-running"><span class="dot"></span>Предварительно · по проверенным решениям</span>{% endif %}
+          {% if c.results_published %}<a class="btn btn--sm btn--ghost" href="{% url 'competitions:protocol' c.pk %}">{% icon 'file' 'i--sm' %} Протокол</a><a class="btn btn--sm btn--ghost" href="{% url 'competitions:results_csv' c.pk %}">{% icon 'download' 'i--sm' %} CSV</a>{% endif %}
+        </div>
+      </div>
+      {% if my_result %}
+        <div class="result-hero">
+          <div class="result-hero__place">{{ my_result.place }}<small> место</small></div>
+          <div><b style="font-size:17px">Ваш результат{% if my_result.diploma %} · {{ my_result.diploma }}{% endif %}</b><div class="muted">{{ my_result.score|floatformat:"-1" }} баллов из {{ total_max|default:"—" }} · участников: {{ my_result.participants_total }}</div></div>
+          <div class="tr"><div class="mono muted" style="font-size:11px;letter-spacing:.1em;text-transform:uppercase">В рейтинг</div><div style="font:700 26px var(--f-display);color:var(--accent)">+{{ my_result.rating_points|fnum }}</div></div>
+        </div>
+      {% endif %}
+      {% if c.has_contest and standings_mode %}
+        {% include "partials/standings.html" with final=c.results_published %}
+      {% elif results %}
+        <div class="table-wrap"><table class="table">
+          <thead><tr><th>Место</th><th>Участник</th><th class="tr">Баллы</th><th class="tr">Рейтинг. очки</th></tr></thead>
+          <tbody>{% for r in results %}<tr class="{% if r.athlete_id == user.pk %}is-me{% endif %}"><td><span class="place {% if r.place <= 3 %}place--{{ r.place }}{% endif %}">{{ r.place }}</span></td><td><a class="who" href="{{ r.athlete.get_absolute_url }}">{% avatar r.athlete 'sm' %}<span><b>{{ r.athlete.full_name }}</b><small>{{ r.athlete.city }}</small></span></a></td><td class="tr num" style="font-weight:800">{{ r.score|floatformat:"-1" }}</td><td class="tr num accent">+{{ r.rating_points|fnum }}</td></tr>{% endfor %}</tbody>
+        </table></div>
+      {% elif c.is_finished %}
+        <div class="panel-note">Итоги ещё не опубликованы — организатор проверяет решения.</div>
+      {% elif c.is_running %}
+        <div class="panel-note">Таблица скрыта организатором до окончания тура.</div>
+      {% else %}
+        <div class="panel-note">Таблица появится после старта соревнования.</div>
+      {% endif %}
+    </section>
+
+    {% if c.rules %}
+    <section class="csec" id="rules">
+      <div class="csec__head"><h2><span class="n">05</span>Правила и инструкция</h2></div>
+      <div class="card"><div class="prose">{{ c.rules|markup }}</div></div>
+    </section>
+    {% endif %}
+  </div>
+
+  <aside class="stack">
+    <div class="card">
+      <h3 class="card__title mb2">Ключевые даты</h3>
+      <dl class="dl" style="grid-template-columns:1fr auto">
+        {% if c.registration_start %}<dt>Регистрация с</dt><dd>{{ c.registration_start|date:"d.m H:i" }}</dd>{% endif %}
+        <dt>Регистрация до</dt><dd>{{ c.registration_deadline|date:"d.m H:i" }}</dd>
+        <dt>Старт</dt><dd>{{ c.start_at|date:"d.m H:i" }}</dd>
+        <dt>Финиш</dt><dd>{{ c.end_at|date:"d.m H:i" }}</dd>
+        {% if c.results_published %}<dt>Итоги</dt><dd>{{ c.results_published_at|date:"d.m H:i" }}</dd>{% endif %}
+      </dl>
+    </div>
+    <div class="card">
+      <h3 class="card__title mb2">Место проведения</h3>
+      <p class="muted mb0">{% icon 'pin' 'i--sm' %} {{ c.location|default:"Онлайн" }}</p>
+    </div>
+    <div class="card">
+      <h3 class="card__title mb2">Как считается рейтинг</h3>
+      <p class="muted" style="font-size:14px">Очки = 100·(N−M+1)/N × K<sub>ур</sub> {{ c.level.coefficient }} × массовость × сила состава.</p>
+      <a class="link" href="{% url 'rating:index' %}#method">Методика {% icon 'arrow-right' 'i--sm' %}</a>
+    </div>
+  </aside>
+</div>
+{% endblock %}

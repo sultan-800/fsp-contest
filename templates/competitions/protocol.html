@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% load fsp %}
+{% block title %}Протокол — {{ c.title }}{% endblock %}
+{% block content %}
+<div class="container container--narrow">
+  <div class="phead">
+    <div class="row row--between no-print"><a class="btn btn--ghost btn--sm" href="{{ c.get_absolute_url }}#results">{% icon 'arrow-left' 'i--sm' %} Назад</a><a class="btn btn--sm" href="{% url 'competitions:results_csv' c.pk %}">{% icon 'download' 'i--sm' %} Скачать CSV</a></div>
+    <div class="eyebrow mt3">Итоговый протокол</div>
+    <h1 class="mt2" style="font-size:30px">{{ c.title }}</h1>
+    <p>{{ c.level.name }} · {{ c.discipline.name }} · {{ c.start_at|date:"j E Y" }} · {{ c.get_format_display }}{% if c.location %} · {{ c.location }}{% endif %}</p>
+  </div>
+  <div class="table-wrap"><table class="table table--compact">
+    <thead><tr><th>Место</th><th>ФИО</th><th>Город</th><th>Разряд</th>{% for t in tasks %}<th class="tc">{{ t.letter }}</th>{% endfor %}<th class="tr">Баллы</th><th class="tr">Очки</th></tr></thead>
+    <tbody>{% for r in results %}<tr><td><span class="place {% if r.place <= 3 %}place--{{ r.place }}{% endif %}">{{ r.place }}</span></td><td><b>{{ r.athlete.full_name }}</b></td><td>{{ r.athlete.city }}</td><td>{{ r.athlete.qualification.short|default:"—" }}</td>{% for t in tasks %}<td class="tc num">{{ r.details|get_item:t.letter|default_if_none:"—" }}</td>{% endfor %}<td class="tr num" style="font-weight:800">{{ r.score|floatformat:"-1" }}</td><td class="tr num">{{ r.rating_points|fnum }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  <p class="help mt2">Сформировано платформой «ФСП Контест» {{ now|date:"j E Y, H:i" }}. Итоги утверждены {{ c.results_published_at|date:"j E Y, H:i" }}.</p>
+  <p class="no-print mt2"><span class="help">Для печати используйте Ctrl+P — протокол оптимизирован для печати.</span></p>
+</div>
+{% endblock %}

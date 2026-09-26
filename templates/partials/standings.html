@@ -1,0 +1,31 @@
+{% load fsp %}
+<div class="table-wrap">
+  <table class="table">
+    <thead><tr>
+      <th style="width:70px">Место</th><th>Участник</th>
+      {% for t in standings_tasks %}<th class="tc" title="{{ t.title }}">{{ t.letter }}<br><span class="dim" style="font-size:10px">{{ t.max_score }}</span></th>{% endfor %}
+      <th class="tr">Баллы</th><th class="tr" title="Суммарное время получения лучших баллов, ч:мин">Время</th>
+    </tr></thead>
+    <tbody>
+    {% for r in standings %}
+      <tr class="{% if r.athlete.pk == user.pk %}is-me{% endif %}">
+        <td><span class="place {% if final and r.place <= 3 %}place--{{ r.place }}{% endif %}">{{ r.place }}</span></td>
+        <td><a class="who" href="{{ r.athlete.get_absolute_url }}">{% avatar r.athlete 'sm' %}<span><b>{{ r.athlete.full_name }}</b><small>{{ r.athlete.city|default:"" }}</small></span></a></td>
+        {% for t in standings_tasks %}{% with cell=r.cells|get_item:t.id %}
+          <td class="tc">
+            {% if cell.state == 'none' %}<span class="cell-none">·</span>
+            {% elif cell.state == 'pending' and not cell.best %}<span class="cell-score cell-pending">?<small>{{ cell.attempts }} поп.</small></span>
+            {% elif cell.best %}<span class="cell-score {% if cell.best >= t.max_score %}cell-full{% else %}cell-scored{% endif %}">{{ cell.best }}<small>{{ cell.time|hm }}</small></span>
+            {% else %}<span class="cell-score cell-zero">0<small>{{ cell.attempts }} поп.</small></span>{% endif %}
+          </td>
+        {% endwith %}{% endfor %}
+        <td class="tr num" style="font-weight:800;font-size:16px">{{ r.total }}</td>
+        <td class="tr num muted">{{ r.penalty|hm }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="{{ standings_tasks|length|add:4 }}"><div class="empty">Пока нет отправленных решений</div></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+<p class="help mt1">Ранжирование: сумма баллов (лучшая проверенная попытка по каждой задаче) → меньшее суммарное время получения лучших баллов → при полном равенстве место делится.</p>

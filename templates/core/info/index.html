@@ -1,0 +1,30 @@
+{% extends "core/info/_layout.html" %}{% load fsp %}
+{% block title %}Инфоцентр{% endblock %}
+{% block head_block %}<h1>Инфоцентр</h1><p>Новости федерации, календарь соревнований, положения, правила, полезные материалы и ответы на частые вопросы.</p>{% endblock %}
+{% block info %}
+<div class="grid g2">
+  <div class="card">
+    <div class="card__head"><h3 class="card__title">{% icon 'calendar' 'accent' %} Ближайшие события</h3><a class="link" href="{% url 'core:calendar' %}">Календарь {% icon 'arrow-right' 'i--sm' %}</a></div>
+    <div class="stack-sm">{% for c in next_events %}
+      <a class="row" style="padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:nowrap" href="{{ c.get_absolute_url }}">
+        <span style="min-width:56px;text-align:center;padding:6px;border-radius:10px;background:var(--surface-3)"><b style="display:block;font:700 18px var(--f-display)">{{ c.start_at|date:"j" }}</b><small class="mono muted" style="font-size:10px;text-transform:uppercase">{{ c.start_at|date:"M" }}</small></span>
+        <span class="grow"><b style="font-size:14px">{{ c.title }}</b><br><small class="muted">{{ c.start_at|date:"H:i" }} · {{ c.level.name }}</small></span>
+        {% status_badge c %}
+      </a>{% empty %}<p class="muted">Нет запланированных событий.</p>{% endfor %}</div>
+  </div>
+  <div class="card">
+    <div class="card__head"><h3 class="card__title">{% icon 'news' 'accent' %} Новости</h3><a class="link" href="{% url 'core:news' %}">Все {% icon 'arrow-right' 'i--sm' %}</a></div>
+    <div class="stack-sm">{% for n in news %}
+      <a style="display:block;padding:10px 0;border-bottom:1px solid var(--line)" href="{{ n.get_absolute_url }}"><span class="mono muted" style="font-size:11px">{{ n.published_at|date:"d.m.Y" }} · {{ n.tag }}</span><br><b style="font-size:14.5px">{{ n.title }}</b></a>
+    {% endfor %}</div>
+  </div>
+</div>
+<div class="shead mt4"><div><span class="eyebrow">Документы</span><h2 style="font-size:22px">Положения и правила</h2></div><a class="btn btn--ghost btn--sm" href="{% url 'core:documents' %}">Все документы</a></div>
+<div class="stack-sm">{% for d in docs %}{% include "core/info/_doc_item.html" %}{% endfor %}</div>
+{% if materials %}
+<div class="shead mt4"><div><span class="eyebrow">Обучение</span><h2 style="font-size:22px">Полезные материалы</h2></div></div>
+<div class="grid g2">{% for d in materials %}{% include "core/info/_doc_item.html" %}{% endfor %}</div>
+{% endif %}
+<div class="shead mt4"><div><span class="eyebrow">FAQ</span><h2 style="font-size:22px">Частые вопросы</h2></div><a class="btn btn--ghost btn--sm" href="{% url 'core:faq' %}">Все вопросы</a></div>
+{% for i in faq %}<details class="faq-item"><summary>{{ i.question }}</summary><div class="prose">{{ i.answer|markup }}</div></details>{% endfor %}
+{% endblock %}

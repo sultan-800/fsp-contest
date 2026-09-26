@@ -1,0 +1,217 @@
+{% extends "base.html" %}{% load fsp %}
+{% block fulltitle %}ФСП Контест — соревнования по спортивному программированию{% endblock %}
+{% block content %}
+
+<!-- ============================ HERO -->
+<section class="hero">
+  <div class="orbit" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></div>
+  <div class="container hero__grid">
+    <div>
+      <span class="hero__eyebrow"><b>LIVE</b> Федерация спортивного программирования</span>
+      <h1 class="hero__title">
+        <span class="ln">Код —</span>
+        <span class="ln">это <span class="hl">спорт</span><span class="cursor"></span></span>
+        <span class="ln outline">Побеждай.</span>
+      </h1>
+      <p class="hero__lead">Онлайн-площадка для проведения соревнований по программированию: задачи, отправка решений, экспертная проверка, итоговые таблицы и единый рейтинг спортсменов — в одном месте.</p>
+      <div class="hero__cta">
+        <a class="btn btn--primary btn--xl" href="{% url 'competitions:list' %}">Смотреть соревнования {% icon 'arrow-right' 'arrow' %}</a>
+        {% if user.is_authenticated %}
+          <a class="btn btn--ghost btn--xl" href="{% url 'accounts:profile' %}">{% icon 'user' %} Мой профиль</a>
+        {% else %}
+          <a class="btn btn--ghost btn--xl" href="{% url 'accounts:register' %}">Создать профиль</a>
+        {% endif %}
+      </div>
+      <div class="hero__trust">
+        <span>{% icon 'shield' %}Защита данных</span>
+        <span>{% icon 'check-circle' %}Честная проверка</span>
+        <span>{% icon 'chart' %}Прозрачный рейтинг</span>
+      </div>
+    </div>
+
+    <div class="console" aria-label="Ближайшее соревнование">
+      <div class="console__bar"><i></i><i></i><i></i><span>~/fsp-contest/live</span></div>
+      <div class="console__body">
+<pre class="console__code"><span class="c"># решение участника · задача A</span>
+<span class="k">def</span> <span class="f">solve</span>(n, a):
+    best = cur = a[<span class="n">0</span>]
+    <span class="k">for</span> x <span class="k">in</span> a[<span class="n">1</span>:]:
+        cur = <span class="f">max</span>(x, cur + x)
+        best = <span class="f">max</span>(best, cur)
+    <span class="k">return</span> best  <span class="s"># ✓ 100/100</span></pre>
+        {% if featured %}
+        <div class="console__live">
+          <div class="row row--between">{% status_badge featured %}<span class="chip">{{ featured.discipline.code }}</span></div>
+          <div class="console__title">{{ featured.title }}</div>
+          {% if featured.is_running %}
+            <div class="mono muted mb1" style="font-size:11px;letter-spacing:.12em;text-transform:uppercase">До окончания</div>
+            <div class="countdown countdown--accent countdown--sm" data-countdown="{{ featured.end_at|date:'c' }}">
+              <div class="countdown__unit" data-unit="d"><span class="countdown__num" data-u="d">00</span><span class="countdown__lbl">дн</span></div>
+              <div class="countdown__unit"><span class="countdown__num" data-u="h">00</span><span class="countdown__lbl">час</span></div><span class="countdown__sep">:</span>
+              <div class="countdown__unit"><span class="countdown__num" data-u="m">00</span><span class="countdown__lbl">мин</span></div><span class="countdown__sep">:</span>
+              <div class="countdown__unit"><span class="countdown__num" data-u="s">00</span><span class="countdown__lbl">сек</span></div>
+            </div>
+          {% else %}
+            <div class="mono muted mb1" style="font-size:11px;letter-spacing:.12em;text-transform:uppercase">До старта</div>
+            <div class="countdown countdown--sm" data-countdown="{{ featured.start_at|date:'c' }}">
+              <div class="countdown__unit" data-unit="d"><span class="countdown__num" data-u="d">00</span><span class="countdown__lbl">дн</span></div>
+              <div class="countdown__unit"><span class="countdown__num" data-u="h">00</span><span class="countdown__lbl">час</span></div><span class="countdown__sep">:</span>
+              <div class="countdown__unit"><span class="countdown__num" data-u="m">00</span><span class="countdown__lbl">мин</span></div><span class="countdown__sep">:</span>
+              <div class="countdown__unit"><span class="countdown__num" data-u="s">00</span><span class="countdown__lbl">сек</span></div>
+            </div>
+          {% endif %}
+          <div class="console__stats">
+            <div><b>{{ featured.participants_count }}</b><small>участн.</small></div>
+            <div><b>{{ featured.tasks.count }}</b><small>задач</small></div>
+            <div><b>{{ featured.level.coefficient|floatformat:1 }}×</b><small>коэф.</small></div>
+          </div>
+          <a class="btn btn--primary btn--block mt2" href="{{ featured.get_absolute_url }}">{% if featured.is_running %}Перейти к контесту{% else %}Подробнее и регистрация{% endif %} {% icon 'arrow-right' 'arrow' %}</a>
+        </div>
+        {% else %}
+        <div class="console__live"><div class="console__title">Скоро новые соревнования</div><p class="muted mb0">Следите за календарём Инфоцентра.</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="container mt5">
+    <div class="strip">
+      <div class="strip__item"><div class="strip__num"><span data-count="{{ stats.athletes }}">{{ stats.athletes }}</span></div><div class="strip__lbl">спортсменов</div></div>
+      <div class="strip__item"><div class="strip__num"><span data-count="{{ stats.competitions }}">{{ stats.competitions }}</span></div><div class="strip__lbl">соревнований</div></div>
+      <div class="strip__item"><div class="strip__num"><span data-count="{{ stats.submissions }}">{{ stats.submissions }}</span></div><div class="strip__lbl">отправленных решений</div></div>
+      <div class="strip__item"><div class="strip__num"><span data-count="{{ stats.disciplines }}">{{ stats.disciplines }}</span><sup>●</sup></div><div class="strip__lbl">дисциплин</div></div>
+    </div>
+  </div>
+  <div class="marquee" aria-hidden="true"><div class="marquee__track">
+    {% for d in disciplines %}<span>{{ d.name }}</span>{% endfor %}{% for d in disciplines %}<span>{{ d.name }}</span>{% endfor %}
+  </div></div>
+</section>
+
+<!-- ============================ СОРЕВНОВАНИЯ -->
+<section class="section">
+  <div class="container">
+    <div class="shead reveal">
+      <div><span class="eyebrow">01 — Соревнования</span><h2>Сейчас и скоро</h2></div>
+      <a class="btn btn--ghost" href="{% url 'competitions:list' %}">Все соревнования {% icon 'arrow-right' 'arrow' %}</a>
+    </div>
+    {% if running or upcoming %}
+    <div class="bento reveal">
+      {% for c in running %}{% include "partials/ccard.html" with c=c big=forloop.first %}{% if forloop.first %}{% endif %}{% endfor %}
+      {% for c in upcoming %}{% include "partials/ccard.html" with c=c big=False %}{% endfor %}
+    </div>
+    {% else %}
+      <div class="card empty">{% icon 'calendar' %}<h3>Пока нет активных соревнований</h3><p>Загляните в календарь — там анонсы ближайших стартов.</p></div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ============================ КАК ЭТО РАБОТАЕТ -->
+<section class="section section--tight">
+  <div class="container">
+    <div class="shead reveal"><div><span class="eyebrow">02 — Путь спортсмена</span><h2>От регистрации до рейтинга</h2></div></div>
+    <div class="steps reveal">
+      <div class="step"><div class="step__n">01</div><h3>Профиль</h3><p>Регистрация за минуту: ФИО, город, учебное заведение, разряд и дисциплины.</p></div>
+      <div class="step"><div class="step__n">02</div><h3>Заявка</h3><p>Выберите соревнование и подайте заявку — организатор сразу видит участника.</p></div>
+      <div class="step"><div class="step__n">03</div><h3>Решения</h3><p>Во время тура решайте задачи в редакторе или загружайте файлы с кодом.</p></div>
+      <div class="step"><div class="step__n">04</div><h3>Рейтинг</h3><p>После проверки результат попадает в профиль и пересчитывает рейтинг.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ РЕЙТИНГ -->
+<section class="section">
+  <div class="container">
+    <div class="grid g2" style="gap:40px;align-items:start">
+      <div class="reveal">
+        <span class="eyebrow">03 — Рейтинг</span>
+        <h2 class="mt2">Лучшие спортсмены</h2>
+        <p class="lead mb3">Рейтинг учитывает уровень соревнования, занятое место, массовость, силу состава, спортивный разряд и давность результата.</p>
+        <div class="formula">
+          <span class="c">// модель рейтинга ФСП Контест</span>
+          <span class="big">R = <em>Q</em> + Σ P · K<sub>ур</sub> · K<sub>N</sub> · K<sub>поля</sub> · <em>D</em></span>
+          <span class="c">Q</span> — бонус разряда · <span class="c">P</span> — очки за место<br>
+          <span class="c">K</span> — уровень, массовость, сила состава<br>
+          <span class="c">D</span> — давность: вес результата ×0.5 за год
+        </div>
+        <a class="link mt3" href="{% url 'rating:index' %}#method">Подробнее о методике {% icon 'arrow-right' 'i--sm' %}</a>
+      </div>
+      <div class="reveal">
+        {% if top %}
+        <div class="lb">
+          {% for a in top %}
+          <a class="lb__row" href="{{ a.get_absolute_url }}">
+            <span class="place place--{{ forloop.counter }}">{{ forloop.counter }}</span>
+            <span class="row" style="gap:12px;flex-wrap:nowrap">{% avatar a %}<span><b style="display:block">{{ a.full_name }}</b><small class="muted">{{ a.city|default:"—" }}{% if a.qualification and a.qualification_verified %} · {{ a.qualification.short }}{% endif %}</small></span></span>
+            <span class="lb__pts">{{ a.rating|fnum }}<small>очков</small></span>
+          </a>
+          {% endfor %}
+        </div>
+        <a class="btn btn--ghost btn--block mt2" href="{% url 'rating:index' %}">Полный рейтинг {% icon 'arrow-right' 'arrow' %}</a>
+        {% else %}<div class="card empty">{% icon 'chart' %}<h3>Рейтинг формируется</h3><p>Появится после подведения итогов первых соревнований.</p></div>{% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ ИТОГИ -->
+{% if finished %}
+<section class="section section--tight">
+  <div class="container">
+    <div class="shead reveal"><div><span class="eyebrow">04 — Итоги</span><h2>Недавние результаты</h2></div></div>
+    <div class="grid g3 reveal">
+      {% for c in finished %}
+      <a href="{{ c.get_absolute_url }}#results" class="card card--hover" style="color:inherit">
+        <div class="row row--between mb2"><span class="ccard__level">{{ c.level.name }}</span><span class="mono dim" style="font-size:12px">{{ c.end_at|date:"d.m.Y" }}</span></div>
+        <h3 style="font-size:17px;line-height:1.3">{{ c.title }}</h3>
+        <div class="podium-mini">
+          {% for r in c.podium %}<div><span class="place place--{{ r.place }}" style="min-width:28px;height:28px;font-size:12px">{{ r.place }}</span><span class="grow">{{ r.athlete.short_name }}</span><span class="mono muted">{{ r.score|floatformat:"-1" }}</span></div>{% endfor %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ============================ ДИСЦИПЛИНЫ -->
+<section class="section section--tight">
+  <div class="container">
+    <div class="shead reveal"><div><span class="eyebrow">05 — Дисциплины</span><h2>Направления спортивного программирования</h2></div></div>
+    <div class="grid g3 reveal" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">
+      {% for d in disciplines %}
+      <a class="disc" href="{% url 'competitions:list' %}?discipline={{ d.pk }}"><span class="disc__code">{{ d.code|default:"FSP" }}</span><h3>{{ d.name }}</h3><p>{{ d.description|truncatechars:80 }}</p></a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ============================ НОВОСТИ -->
+{% if news %}
+<section class="section section--tight">
+  <div class="container">
+    <div class="shead reveal"><div><span class="eyebrow">06 — Инфоцентр</span><h2>Новости федерации</h2></div><a class="btn btn--ghost" href="{% url 'core:news' %}">Все новости {% icon 'arrow-right' 'arrow' %}</a></div>
+    <div class="grid g3 reveal">
+      {% for n in news %}
+      <a class="news-card" href="{{ n.get_absolute_url }}">
+        <div class="news-card__meta"><span>{{ n.tag }}</span><span>{{ n.published_at|date:"d.m.Y" }}</span></div>
+        <h3>{{ n.title }}</h3><p>{{ n.excerpt|default:n.body|truncatechars:140 }}</p>
+        <span class="link">Читать {% icon 'arrow-right' 'i--sm' %}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ============================ CTA -->
+{% if not user.is_authenticated %}
+<section class="section">
+  <div class="container">
+    <div class="cta-band reveal">
+      <div><h2>Готов к старту?</h2><p>Создай профиль спортсмена, участвуй в соревнованиях и поднимайся в рейтинге федерации.</p></div>
+      <div class="row"><a class="btn btn--xl" href="{% url 'accounts:register' %}">Зарегистрироваться {% icon 'arrow-right' 'arrow' %}</a></div>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

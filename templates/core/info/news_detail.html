@@ -1,0 +1,8 @@
+{% extends "core/info/_layout.html" %}{% load fsp %}
+{% block title %}{{ item.title }}{% endblock %}
+{% block crumbs %}<span class="sep">/</span><a href="{% url 'core:news' %}">Новости</a>{% endblock %}
+{% block head_block %}<span class="chip chip--accent">{{ item.tag }}</span><h1 class="mt2">{{ item.title }}</h1><p class="mono" style="font-size:13px">{{ item.published_at|date:"j E Y, H:i" }}</p>{% endblock %}
+{% block info %}
+<article class="card card--pad-lg">{% if item.excerpt %}<p class="lead" style="max-width:none">{{ item.excerpt }}</p><hr>{% endif %}<div class="prose">{{ item.body|markup }}</div></article>
+{% if more %}<h3 class="mt4">Ещё новости</h3><div class="grid g3">{% for n in more %}<a class="news-card" href="{{ n.get_absolute_url }}"><div class="news-card__meta"><span>{{ n.tag }}</span><span>{{ n.published_at|date:"d.m.Y" }}</span></div><h3 style="font-size:15px">{{ n.title }}</h3></a>{% endfor %}</div>{% endif %}
+{% endblock %}

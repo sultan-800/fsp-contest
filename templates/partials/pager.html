@@ -1,0 +1,9 @@
+{% load fsp %}{% if page.has_other_pages %}
+<nav class="pager" aria-label="Страницы">
+  {% if page.has_previous %}<a href="{% qs page=page.previous_page_number %}" aria-label="Назад">←</a>{% endif %}
+  {% for n in page.paginator.page_range %}
+    {% if n == page.number %}<span class="is-current">{{ n }}</span>
+    {% elif n > page.number|add:-3 and n < page.number|add:3 %}<a href="{% qs page=n %}">{{ n }}</a>{% endif %}
+  {% endfor %}
+  {% if page.has_next %}<a href="{% qs page=page.next_page_number %}" aria-label="Вперёд">→</a>{% endif %}
+</nav>{% endif %}

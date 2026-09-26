@@ -1,0 +1,9 @@
+{% load fsp %}{% with a=d.athlete %}
+<a class="pod pod--{{ n }}" href="{{ a.get_absolute_url }}">
+  <span class="pod__rank">{{ n }}</span>
+  {% if n == 1 %}<span class="pod__crown">{% icon 'crown' 'i--lg' %}</span>{% endif %}
+  {% avatar a 'lg' %}
+  <div class="pod__name">{{ a.full_name }}</div>
+  <div class="pod__meta">{{ a.city|default:"—" }}{% if a.qualification and a.qualification_verified %} · {{ a.qualification.short }}{% endif %} · {{ d.count }} {{ d.count|plural:"старт,старта,стартов" }}</div>
+  <div class="pod__base"><div class="pod__pts">{{ d.value|fnum }}<small>очков рейтинга</small></div></div>
+</a>{% endwith %}

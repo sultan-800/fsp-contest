@@ -1,0 +1,1 @@
+{% if c.results_published %}<span class="badge st-results {% if size %}badge--{{ size }}{% endif %}"><span class="dot"></span>Итоги подведены</span>{% else %}<span class="badge st-{{ c.status }} {% if size %}badge--{{ size }}{% endif %}"><span class="dot"></span>{{ c.status_label }}</span>{% endif %}

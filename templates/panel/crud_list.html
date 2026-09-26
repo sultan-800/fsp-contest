@@ -1,0 +1,15 @@
+{% extends "panel/_layout.html" %}{% load fsp %}
+{% block title %}{{ cfg.title }}{% endblock %}
+{% block panel %}
+<div class="plo__head"><div><span class="eyebrow">{% if cfg.group == 'dir' %}Справочник{% else %}Инфоцентр{% endif %}</span><h1>{{ cfg.title }}</h1>{% if cfg.hint %}<p>{{ cfg.hint }}</p>{% endif %}</div>
+  <div class="row">{% if key == 'levels' or key == 'qualifications' %}<form method="post" action="{% url 'panel:rating_recalculate' %}">{% csrf_token %}<input type="hidden" name="back" value="dir"><button class="btn" type="submit">{% icon 'refresh' 'i--sm' %} Пересчитать рейтинг</button></form>{% endif %}
+  <a class="btn btn--primary" href="{% url 'panel:crud_new' key %}">{% icon 'plus' 'i--sm' %} Добавить {{ cfg.one }}</a></div></div>
+<div class="table-wrap"><table class="table">
+  <thead><tr>{% for f, l in cfg.cols %}<th>{{ l }}</th>{% endfor %}<th></th></tr></thead>
+  <tbody>{% for obj, vals in rows %}<tr>
+    {% for v in vals %}<td>{% if v is True %}<span class="badge st-running">Да</span>{% elif v is False %}<span class="badge">Нет</span>{% elif forloop.first %}<a href="{% url 'panel:crud_edit' key obj.pk %}"><b>{{ v }}</b></a>{% else %}{% if v.year %}{{ v|date:"d.m.Y" }}{% else %}{{ v }}{% endif %}{% endif %}</td>{% endfor %}
+    <td class="tr nowrap"><a class="btn btn--xs" href="{% url 'panel:crud_edit' key obj.pk %}">{% icon 'edit' 'i--sm' %}</a>
+      <form class="inline-form" method="post" action="{% url 'panel:crud_delete' key obj.pk %}" data-confirm="Удалить запись?">{% csrf_token %}<button class="btn btn--xs btn--danger" aria-label="Удалить">{% icon 'trash' 'i--sm' %}</button></form></td>
+  </tr>{% empty %}<tr><td colspan="{{ cfg.cols|length|add:1 }}"><div class="empty">Записей нет</div></td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

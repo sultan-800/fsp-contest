@@ -1,0 +1,8 @@
+{% extends "core/info/_layout.html" %}{% load fsp %}
+{% block title %}{{ doc.title }}{% endblock %}
+{% block crumbs %}<span class="sep">/</span><a href="{% url 'core:documents' %}">Документы</a>{% endblock %}
+{% block head_block %}<span class="chip chip--blue">{{ doc.get_category_display }}</span><h1 class="mt2">{{ doc.title }}</h1>{% if doc.description %}<p>{{ doc.description }}</p>{% endif %}
+<div class="row mt2">{% if doc.file %}<a class="btn btn--primary" href="{% url 'core:document_download' doc.pk %}">{% icon 'download' %} Скачать {{ doc.file_ext }}</a>{% endif %}{% if doc.url %}<a class="btn" href="{{ doc.url }}" target="_blank" rel="noopener noreferrer">{% icon 'external' %} Открыть ресурс</a>{% endif %}<span class="mono dim" style="font-size:12px">Обновлено {{ doc.published_at|date:"d.m.Y" }}</span></div>{% endblock %}
+{% block info %}
+{% if doc.body %}<article class="card card--pad-lg"><div class="prose">{{ doc.body|markup }}</div></article>{% endif %}
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}{% load fsp %}
+{% block title %}Рейтинг спортсменов{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="phead">
+    <div class="phead__crumbs"><a href="{% url 'core:home' %}">Главная</a><span class="sep">/</span><span>Рейтинг</span></div>
+    <div class="phead__row">
+      <div><h1>Рейтинг спортсменов{% if discipline %}<br><span class="accent" style="font-size:.55em">{{ discipline.name }}</span>{% endif %}</h1>
+        <p>{{ total }} {{ total|plural:"спортсмен,спортсмена,спортсменов" }} в рейтинге. Обновляется автоматически после подведения итогов каждого соревнования.</p></div>
+      <a class="btn btn--ghost" href="#method">{% icon 'info' 'i--sm' %} Методика расчёта</a>
+    </div>
+  </div>
+
+  <form class="filters mb4" method="get" data-autosubmit>
+    <label class="search">{% icon 'search' %}<input type="search" name="q" value="{{ f.q }}" placeholder="Поиск по ФИО" aria-label="Поиск"></label>
+    <select name="discipline" aria-label="Дисциплина"><option value="">Общий зачёт</option>{% for d in disciplines %}<option value="{{ d.pk }}" {% if f.discipline == d.pk|stringformat:'s' %}selected{% endif %}>{{ d.name }}</option>{% endfor %}</select>
+    <select name="city" aria-label="Город"><option value="">Все города</option>{% for c in cities %}<option value="{{ c }}" {% if f.city == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select>
+    <select name="qualification" aria-label="Разряд"><option value="">Любой разряд</option>{% for q in qualifications %}<option value="{{ q.pk }}" {% if f.qualification == q.pk|stringformat:'s' %}selected{% endif %}>{{ q.name }}</option>{% endfor %}</select>
+    <button class="btn btn--primary" type="submit">Применить</button>
+    {% if filtering or discipline %}<a class="btn btn--ghost" href="{% url 'rating:index' %}">Сбросить</a>{% endif %}
+  </form>
+
+  {% if podium %}
+  <div class="podium">
+    {% for d in podium %}{% if forloop.counter == 2 %}{% include "rating/_pod.html" with d=d n=2 %}{% endif %}{% endfor %}
+    {% for d in podium %}{% if forloop.counter == 1 %}{% include "rating/_pod.html" with d=d n=1 %}{% endif %}{% endfor %}
+    {% for d in podium %}{% if forloop.counter == 3 %}{% include "rating/_pod.html" with d=d n=3 %}{% endif %}{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if page.object_list %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th style="width:80px">Место</th><th>Спортсмен</th><th>Город</th><th>Разряд</th><th class="tc">Старты</th><th class="tc">Лучшее место</th><th class="tr">Рейтинг</th></tr></thead>
+      <tbody>
+      {% for d in page.object_list %}{% with a=d.athlete %}
+        <tr class="{% if a.pk == user.pk %}is-me{% endif %}">
+          <td><span class="place {% if d.position <= 3 %}place--{{ d.position }}{% endif %}">{{ d.position }}</span></td>
+          <td><a class="who" href="{{ a.get_absolute_url }}">{% avatar a 'sm' %}<span><b>{{ a.full_name }}</b>{% if a.show_institution and a.is_profile_public and a.institution %}<small>{{ a.institution|truncatechars:48 }}</small>{% endif %}</span></a></td>
+          <td>{{ a.city|default:"—" }}</td>
+          <td>{% if a.qualification %}<span class="chip {% if a.qualification_verified %}chip--accent{% endif %}" title="{% if a.qualification_verified %}Подтверждён{% else %}Не подтверждён{% endif %}">{{ a.qualification.short }}{% if a.qualification_verified %} ✓{% endif %}</span>{% else %}<span class="dim">—</span>{% endif %}</td>
+          <td class="tc num">{{ d.count }}</td>
+          <td class="tc num">{{ d.best|default:"—" }}</td>
+          <td class="tr"><span class="rating-val">{{ d.value|fnum }}</span></td>
+        </tr>
+      {% endwith %}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "partials/pager.html" %}
+  {% elif not podium %}
+    <div class="card empty">{% icon 'chart' %}<h3>Нет данных</h3><p>По выбранным фильтрам спортсменов в рейтинге нет.</p></div>
+  {% endif %}
+
+  <!-- ============ Методика -->
+  <section class="section" id="method">
+    <div class="shead"><div><span class="eyebrow">Методика</span><h2>Как рассчитывается рейтинг</h2></div></div>
+    <div class="method">
+      <div class="stack">
+        <div class="formula">
+          <span class="c">// итоговый рейтинг спортсмена</span>
+          <span class="big">R = <em>Q</em> + Σ ( P<sub>i</sub> · D<sub>i</sub> )</span>
+          <span class="c">// очки за результат в соревновании</span>
+          <span class="big" style="font-size:16px">P = 100·(N−M+1)/N · K<sub>ур</sub> · K<sub>N</sub> · K<sub>поля</sub></span>
+          <span class="c">N</span> — участников с результатом, <span class="c">M</span> — занятое место<br>
+          <span class="c">K<sub>N</sub></span> = 1 + 0.25·lg N — массовость соревнования<br>
+          <span class="c">K<sub>поля</sub></span> = 1 + (средний бонус разрядов участников)/1000<br>
+          <span class="c">D</span> = 0.5<sup>возраст/{{ half_life }} дн</sup> — давность результата
+        </div>
+        <div class="callout">{% icon 'info' %}<span><strong>Честность и прозрачность.</strong> Бонус разряда Q начисляется только после подтверждения организатором. Очки начисляются лишь за ненулевой результат. Все коэффициенты хранятся в справочниках и могут быть изменены федерацией.</span></div>
+      </div>
+      <div class="grid g2" style="align-content:start">
+        <div class="card">
+          <h3 class="card__title mb2">K<sub>ур</sub> — уровень</h3>
+          <div class="coef-list">{% for l in levels %}<div><span>{{ l.name }}</span><b>×{{ l.coefficient }}</b></div>{% endfor %}</div>
+        </div>
+        <div class="card">
+          <h3 class="card__title mb2">Q — квалификация</h3>
+          <div class="coef-list">{% for q in qualifications %}<div><span>{{ q.short }}</span><b>+{{ q.points }}</b></div>{% endfor %}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
