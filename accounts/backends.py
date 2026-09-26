@@ -3,7 +3,6 @@ from django.contrib.auth.backends import ModelBackend
 
 
 class EmailOrUsernameBackend(ModelBackend):
-    """Вход по логину или email. Время ответа выравнивается для несуществующих пользователей."""
 
     def authenticate(self, request, username=None, password=None, **kwargs):
         User = get_user_model()

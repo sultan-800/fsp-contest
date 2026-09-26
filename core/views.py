@@ -46,7 +46,7 @@ def home(request):
     })
 
 
-# ------------------------------------------------------------------ Инфоцентр
+# Инфоцентр
 def info_index(request):
     now = timezone.now()
     return render(request, "core/info/index.html", {
@@ -143,7 +143,7 @@ def faq(request):
 
 
 
-# ------------------------------------------------------------------ уведомления
+# уведомления
 @login_required
 def notifications(request):
     items = request.user.notifications.all()[:60]
@@ -174,7 +174,7 @@ def privacy(request):
     return render(request, "core/privacy.html")
 
 
-# ------------------------------------------------------------------ ошибки
+# ошибки
 def _err(request, code, title, text):
     return render(request, "error.html", {"code": code, "title": title, "text": text}, status=code)
 

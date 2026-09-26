@@ -7,7 +7,7 @@ from django.utils.safestring import mark_safe
 register = template.Library()
 
 
-# --------------------------------------------------------------- безопасная разметка
+# безопасная разметка
 _INLINE_CODE = re.compile(r"`([^`\n]+)`")
 _BOLD = re.compile(r"\*\*([^*\n]+)\*\*")
 _ITAL = re.compile(r"(?<![*\w])\*([^*\n]+)\*(?!\w)")
@@ -15,7 +15,6 @@ _LINK = re.compile(r"\[([^\]\n]+)\]\((https?://[^\s)]+)\)")
 
 
 def _inline(s):
-    # s уже экранирована
     codes = []
 
     def keep(m):
@@ -32,7 +31,6 @@ def _inline(s):
 
 @register.filter(is_safe=True)
 def markup(text):
-    """Мини-markdown: всё содержимое экранируется ДО преобразования — XSS невозможен."""
     if not text:
         return ""
     text = escape(str(text)).replace("\r\n", "\n")
@@ -91,7 +89,7 @@ def markup(text):
     return mark_safe("\n".join(out))
 
 
-# --------------------------------------------------------------- утилиты
+# утилиты
 @register.filter
 def get_item(d, key):
     try:
@@ -144,7 +142,6 @@ def fnum(v):
 
 @register.simple_tag(takes_context=True)
 def qs(context, **kwargs):
-    """Собирает querystring, сохраняя текущие параметры: {% qs page=2 %}"""
     q = context["request"].GET.copy()
     for k, v in kwargs.items():
         if v in (None, ""):
@@ -157,7 +154,7 @@ def qs(context, **kwargs):
 
 @register.simple_tag
 def sparkline(points, width=560, height=140, pad=10):
-    """SVG-график истории рейтинга (серверный рендер, без JS)."""
+    # график истории
     vals = [float(p) for p in points]
     if not vals:
         return ""

@@ -1,4 +1,3 @@
-"""Бизнес-логика соревнований: таблица результатов, подведение итогов."""
 from dataclasses import dataclass, field
 
 from django.db import transaction
@@ -9,14 +8,14 @@ from core.models import Notification
 from rating import services as rating
 
 from .models import Competition, Result, Submission
-
+# бизнес логика
 
 @dataclass
 class Cell:
     best: int = 0
     attempts: int = 0
     pending: int = 0
-    time: int = 0          # минута получения лучшего балла
+    time: int = 0
     reviewed: bool = False
 
     @property
@@ -43,13 +42,6 @@ class Row:
 
 
 def compute_standings(competition: Competition):
-    """
-    Правила ранжирования:
-      1) сумма баллов (по каждой задаче берётся лучшая проверенная попытка) — по убыванию;
-      2) при равенстве — меньшее суммарное время (минуты от старта до попытки,
-         принёсшей лучший балл по каждой задаче);
-      3) при полном равенстве участники делят место.
-    """
     tasks = list(competition.tasks.all())
     subs = (Submission.objects.filter(competition=competition)
             .select_related("athlete", "task").order_by("created_at"))
@@ -84,7 +76,6 @@ def compute_standings(competition: Competition):
 
 
 def assign_places(pairs):
-    """pairs: [(athlete, score)] → [(athlete, score, place)] с делёжкой мест при равенстве."""
     ordered = sorted(pairs, key=lambda p: -p[1])
     out, prev_score, prev_place = [], None, 0
     for i, (a, s) in enumerate(ordered, start=1):
@@ -96,7 +87,6 @@ def assign_places(pairs):
 
 @transaction.atomic
 def publish_results(competition: Competition, reason_user=None):
-    """Формирует итоговую таблицу, начисляет рейтинговые очки и пересчитывает рейтинг."""
     if competition.has_contest:
         tasks, rows = compute_standings(competition)
         Result.objects.filter(competition=competition).delete()

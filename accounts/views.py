@@ -174,7 +174,6 @@ def settings_view(request):
 
 
 def _anonymize(user):
-    """Право на удаление: ПД стираются, спортивные результаты остаются обезличенными."""
     uid = user.pk
     user.username = f"deleted_{uid}"
     user.email = f"deleted_{uid}@deleted.invalid"
@@ -191,7 +190,6 @@ def _anonymize(user):
 
 @login_required
 def export_data(request):
-    """Выгрузка всех персональных данных пользователя (JSON)."""
     u = request.user
     data = {
         "account": {"username": u.username, "email": u.email, "role": u.get_role_display(),

@@ -22,7 +22,7 @@ from . import forms
 User = get_user_model()
 
 
-# ================================================================== дашборд
+# дашборд
 @organizer_required
 def dashboard(request):
     pending = Submission.objects.filter(status=Submission.Status.PENDING)
@@ -48,7 +48,7 @@ def dashboard(request):
     })
 
 
-# ================================================================== соревнования
+# соревнования
 @organizer_required
 def competitions(request):
     qs = Competition.objects.select_related("discipline", "level").annotate(
@@ -206,7 +206,7 @@ def competition_action(request, pk, action):
     return _back(comp)
 
 
-# ================================================================== задания
+# задания
 @organizer_required
 def task_edit(request, pk, tid=None):
     comp = get_object_or_404(Competition, pk=pk)
@@ -258,7 +258,7 @@ def task_action(request, pk, tid, action):
     return _back(comp, "tasks")
 
 
-# ================================================================== участники
+# участники
 @require_POST
 @organizer_required
 def participant_remove(request, pk, rid):
@@ -287,7 +287,7 @@ def participant_add(request, pk):
                     or reverse("panel:competition", args=[comp.pk]) + "?tab=participants")
 
 
-# ================================================================== ручные результаты
+# ручные результаты
 @organizer_required
 def manual_results(request, pk):
     comp = get_object_or_404(Competition, pk=pk)
@@ -335,7 +335,7 @@ def manual_results(request, pk):
                                                          "nav": "competitions"})
 
 
-# ================================================================== проверка решений
+# проверка решений
 @organizer_required
 def submissions(request):
     qs = Submission.objects.select_related("athlete", "task", "competition")
@@ -385,7 +385,7 @@ def review(request, sid):
                                                  "lines": range(1, sub.line_count + 1)})
 
 
-# ================================================================== спортсмены
+# спортсмены
 @organizer_required
 def athletes(request):
     qs = User.objects.filter(role=User.Role.ATHLETE).select_related("qualification").annotate(
@@ -433,7 +433,7 @@ def rating_recalculate(request):
     return redirect(request.POST.get("back") == "dir" and reverse("panel:crud", args=["levels"]) or reverse("panel:dashboard"))
 
 
-# ================================================================== справочники и контент (CRUD)
+# справочники туда сюда
 CRUD = {
     "disciplines": {"model": Discipline, "form": forms.DisciplineForm, "title": "Дисциплины", "group": "dir",
                     "cols": [("name", "Название"), ("code", "Код"), ("is_active", "Активна")], "one": "дисциплину"},

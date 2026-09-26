@@ -1,8 +1,3 @@
-"""
-Демонстрационные данные для защиты:
-  python manage.py seed_demo          — заполнить (если база пустая)
-  python manage.py seed_demo --reset  — пересоздать демо-данные
-"""
 import random
 from datetime import timedelta
 
@@ -161,7 +156,7 @@ class Command(BaseCommand):
         self.stdout.write(f"  Организатор: {settings.DEFAULT_ORGANIZER_USERNAME} / {settings.DEFAULT_ORGANIZER_PASSWORD}")
         self.stdout.write(f"  Спортсмен:   ivanov / {ATHLETE_PASSWORD}  (и другие: magomedov, alieva, gasanov …)")
 
-    # ------------------------------------------------------------------
+
     def _athletes(self):
         User = get_user_model()
         out = []
@@ -203,12 +198,12 @@ class Command(BaseCommand):
         RatingHistory.objects.filter(competition=comp).update(created_at=comp.end_at + timedelta(hours=2))
         Competition.objects.filter(pk=comp.pk).update(results_published_at=comp.end_at + timedelta(hours=2))
 
-    # ------------------------------------------------------------------
+
     def _competitions(self):
         A = self.athletes
         now = self.now
 
-        # 1) Чемпионат (давний, очный) — показывает эффект давности
+        # 1) Чемпионат (давний, очный)
         c = self._comp(title="Отборочный этап Чемпионата России по спортивному программированию",
                        short_description="Региональный отбор на Чемпионат России, алгоритмическая дисциплина.",
                        description="Очный отборочный этап. Результаты внесены организатором по итоговому протоколу.",
@@ -234,7 +229,7 @@ class Command(BaseCommand):
                        start_at=now - timedelta(days=75, hours=5), end_at=now - timedelta(days=75))
         self._manual(c, [(A[1], 500), (A[11], 430), (A[3], 430), (A[5], 350), (A[7], 280), (A[9], 240), (A[13], 150)])
 
-        # 4) ТЕСТОВЫЙ КОНТЕСТ (завершён, итоги подведены) — основной демо-сценарий
+        # 4) Тестовый контест
         c = self._comp(title="Тестовый контест по алгоритмическому программированию",
                        short_description="Демонстрационный онлайн-контест: три задачи на префиксные суммы, динамику и поиск в ширину.",
                        description=DESC_TEST, rules=RULES, discipline=self.disc["ALG"], level=self.lv[3],
@@ -268,7 +263,7 @@ class Command(BaseCommand):
         Registration.objects.create(competition=c, athlete=A[12])  # зарегистрировался, но не решал
         self._publish(c)
 
-        # 5) ИДЁТ СЕЙЧАС
+        # 5) Идет сейчас
         c = self._comp(title="Кубок Дагестана по программированию — онлайн-тур",
                        short_description="Личный онлайн-тур Кубка: четыре задачи разной сложности, ручная проверка жюри.",
                        description=DESC_CUP, rules=RULES, discipline=self.disc["ALG"], level=self.lv[2],
@@ -291,7 +286,7 @@ class Command(BaseCommand):
         self._sub(c, t[1], A[2], 30, None, ("java", CODE_JAVA))  # на проверке
         self._sub(c, t[0], A[0], 16, 100, ("python", CODE_PY), "Верно.")  # у демо-спортсмена одна задача решена
 
-        # 6) СКОРО
+        # 6) Скоро
         c = self._comp(title="Осенний отборочный контест ФСП РД",
                        short_description="Отбор в сборную республики на всероссийские соревнования. Регистрация открыта.",
                        description="Контест из трёх задач. Победители и призёры получают приглашение в сборную Республики Дагестан.",
@@ -310,7 +305,7 @@ class Command(BaseCommand):
         for i, ttl in enumerate(["Web: забытый пароль", "Crypto: шифр Цезаря 2.0", "Forensics: потерянный файл"]):
             self._task(c, i, ttl, "Найдите флаг формата `FSP{...}` и отправьте его текстовым ответом.", 100)
 
-        # 7) ЧЕРНОВИК
+        # 7) Черновик
         c = self._comp(title="Зимняя школа олимпиадного программирования — вступительный контест",
                        short_description="Черновик: вступительные испытания в зимнюю школу.", is_published=False, published_at=None,
                        discipline=self.disc["ALG"], level=self.lv[4],
@@ -324,7 +319,7 @@ class Command(BaseCommand):
             Result.objects.create(competition=comp, athlete=a, score=score, place=place, is_manual=True)
         self._publish(comp)
 
-    # ------------------------------------------------------------------
+
     def _content(self):
         now = self.now
         news = [
@@ -366,7 +361,7 @@ class Command(BaseCommand):
             FAQ.objects.create(category=cat, question=q, answer=a, order=i)
 
 
-# ============================================================== тексты
+# тексты
 RULES = """## Общие положения
 - Соревнование проводится в личном зачёте.
 - Решения принимаются только в период проведения тура.

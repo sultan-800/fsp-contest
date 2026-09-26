@@ -1,10 +1,3 @@
-"""
-ФСП Контест — настройки Django.
-
-Все чувствительные параметры берутся из переменных окружения.
-Если SECRET_KEY не задан, он генерируется один раз и хранится в файле .secret_key
-(файл исключён из архива/репозитория).
-"""
 import os
 import secrets
 from pathlib import Path
@@ -121,16 +114,15 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = DEBUG
 
-# Загруженные файлы хранятся ВНЕ публичной директории и отдаются только
-# через представления с проверкой прав доступа.
+
 MEDIA_ROOT = BASE_DIR / "private_media"
-MEDIA_URL = "/_protected_media/"  # никогда не маршрутизируется напрямую
+MEDIA_URL = "/_protected_media/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache", "LOCATION": "fsp"}}
 
-# --- Ограничения загрузки ---
+
 DATA_UPLOAD_MAX_MEMORY_SIZE = 12 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
@@ -139,7 +131,7 @@ SUBMISSION_MAX_CODE_LENGTH = 100_000
 SUBMISSION_COOLDOWN_SECONDS = 10
 MATERIAL_MAX_FILE_SIZE = 10 * 1024 * 1024
 
-# --- Безопасность ---
+# Безопасность
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7
@@ -150,7 +142,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
 
-# Включается в продакшене за HTTPS: DJANGO_HTTPS=1
+# Включаем в проде
 if env_bool("DJANGO_HTTPS", False):
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -164,7 +156,7 @@ LOGIN_LOCKOUT_SECONDS = 15 * 60
 
 ADMIN_URL = os.environ.get("DJANGO_ADMIN_URL", "control-room/")
 
-# Учётная запись организатора по умолчанию (создаётся автоматически после migrate)
+# Учётная запись организатора по умолчанию
 DEFAULT_ORGANIZER_USERNAME = os.environ.get("FSP_ORGANIZER_LOGIN", "organizer")
 DEFAULT_ORGANIZER_EMAIL = os.environ.get("FSP_ORGANIZER_EMAIL", "organizer@fsp-contest.local")
 DEFAULT_ORGANIZER_PASSWORD = os.environ.get("FSP_ORGANIZER_PASSWORD", "Organizer#2026")

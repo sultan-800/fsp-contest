@@ -12,9 +12,8 @@ def material_upload_to(instance, filename):
     return f"materials/{timezone.now():%Y/%m}/{uuid.uuid4().hex}{ext}"
 
 
-# ---------------------------------------------------------------- Справочники
+# Справочники
 class Discipline(models.Model):
-    """Дисциплина спортивного программирования."""
     name = models.CharField("Название", max_length=120, unique=True)
     code = models.CharField("Короткий код", max_length=16, blank=True, help_text="Например: ALG, PROD, CTF")
     description = models.TextField("Описание", blank=True)
@@ -31,7 +30,6 @@ class Discipline(models.Model):
 
 
 class CompetitionLevel(models.Model):
-    """Уровень соревнования. Коэффициент используется в рейтинговой модели."""
     name = models.CharField("Название", max_length=120, unique=True)
     coefficient = models.DecimalField("Коэффициент рейтинга", max_digits=4, decimal_places=2, default=1)
     order = models.PositiveIntegerField("Порядок", default=0)
@@ -46,7 +44,6 @@ class CompetitionLevel(models.Model):
 
 
 class Qualification(models.Model):
-    """Спортивный разряд / звание. Баллы — стартовый бонус в рейтинге."""
     name = models.CharField("Название", max_length=120, unique=True)
     short = models.CharField("Сокращение", max_length=16)
     points = models.PositiveIntegerField("Бонус к рейтингу", default=0)
@@ -61,7 +58,7 @@ class Qualification(models.Model):
         return self.name
 
 
-# ---------------------------------------------------------------- Контент
+# Контент
 class News(models.Model):
     title = models.CharField("Заголовок", max_length=200)
     excerpt = models.CharField("Анонс", max_length=300, blank=True)

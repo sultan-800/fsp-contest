@@ -26,7 +26,7 @@ class User(AbstractUser):
     show_institution = models.BooleanField("Показывать учебное заведение", default=True)
     consent_at = models.DateTimeField("Согласие на обработку ПД", null=True, blank=True)
 
-    # Денормализованный рейтинг (пересчитывается сервисом rating.services)
+    # Ненормализованный рейтинг
     rating = models.FloatField("Рейтинг", default=0, db_index=True)
     rating_position = models.PositiveIntegerField("Место в рейтинге", null=True, blank=True)
 

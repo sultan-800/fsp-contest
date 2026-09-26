@@ -3,7 +3,6 @@ from django.db import models
 
 
 class RatingHistory(models.Model):
-    """Снимок рейтинга спортсмена после каждого пересчёта, в котором он изменился."""
     athlete = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="rating_history")
     value = models.FloatField()
     position = models.PositiveIntegerField(null=True)

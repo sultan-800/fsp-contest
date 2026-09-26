@@ -1,10 +1,9 @@
-/* ФСП Контест — клиентская логика (без inline-скриптов, совместимо со строгим CSP) */
 (function () {
   "use strict";
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
-  /* ---------- мобильное меню ---------- */
+// мобилка
   const burger = $("[data-burger]");
   if (burger) burger.addEventListener("click", () => {
     const nav = $("#nav");
@@ -12,12 +11,12 @@
     burger.setAttribute("aria-expanded", nav.classList.contains("is-open"));
   });
 
-  /* ---------- выпадающее меню профиля ---------- */
+// выпадающее меню профиля
   document.addEventListener("click", (e) => {
     $$("details.menu[open]").forEach((d) => { if (!d.contains(e.target)) d.removeAttribute("open"); });
   });
 
-  /* ---------- уведомления (toasts) ---------- */
+// уведомления
   $$(".toast").forEach((t, i) => {
     const close = () => { t.classList.add("is-hiding"); setTimeout(() => t.remove(), 300); };
     const btn = $("button", t);
@@ -25,7 +24,7 @@
     if (!t.classList.contains("toast--error")) setTimeout(close, 5500 + i * 400);
   });
 
-  /* ---------- обратный отсчёт ---------- */
+// обратный отсчёт
   const pad = (n) => String(n).padStart(2, "0");
   function tick(el) {
     const target = Date.parse(el.dataset.countdown);
@@ -49,7 +48,7 @@
   const timers = $$("[data-countdown]");
   if (timers.length) { timers.forEach(tick); setInterval(() => timers.forEach(tick), 1000); }
 
-  /* ---------- счётчики на главной ---------- */
+// счётчики на главной
   const counters = $$("[data-count]");
   const animateCount = (el) => {
     const end = parseInt(el.dataset.count, 10) || 0; const dur = 1200; const t0 = performance.now();
@@ -57,7 +56,7 @@
     requestAnimationFrame(step);
   };
 
-  /* ---------- появление при скролле ---------- */
+// появление при скролле
   if ("IntersectionObserver" in window) {
     const io = new IntersectionObserver((entries) => {
       entries.forEach((en) => {
@@ -73,12 +72,12 @@
     $$(".reveal").forEach((el) => el.classList.add("is-in"));
   }
 
-  /* ---------- подтверждение опасных действий ---------- */
+// подтверждение опасных действий
   $$("form[data-confirm]").forEach((f) => f.addEventListener("submit", (e) => {
     if (!window.confirm(f.dataset.confirm)) e.preventDefault();
   }));
 
-  /* ---------- копирование ---------- */
+// копирование
   $$("[data-copy]").forEach((b) => b.addEventListener("click", () => {
     const src = document.getElementById(b.dataset.copy);
     if (!src || !navigator.clipboard) return;
@@ -87,7 +86,7 @@
     });
   }));
 
-  /* ---------- клиентские вкладки ---------- */
+// клиентские вкладки
   $$("[data-tabs]").forEach((wrap) => {
     const btns = $$("[data-tab]", wrap);
     const panes = $$("[data-pane-id]", wrap.closest("[data-tabs-scope]") || document);
@@ -97,7 +96,7 @@
     }));
   });
 
-  /* ---------- редактор кода ---------- */
+// редактор кода
   $$("textarea[data-editor]").forEach((ta) => {
     const gutter = $("[data-gutter]", ta.closest(".editor"));
     const info = $("[data-editor-info]", ta.closest(".editor"));
@@ -143,7 +142,7 @@
     update();
   });
 
-  /* ---------- способ отправки: код / файл ---------- */
+// способ код или файл
   $$("[data-submit-modes]").forEach((wrap) => {
     const form = wrap.closest("form");
     const btns = $$("[data-mode]", wrap);
@@ -157,7 +156,7 @@
     }));
   });
 
-  /* ---------- зона перетаскивания файла ---------- */
+// зона загрузки файла
   $$(".dropzone").forEach((dz) => {
     const input = $("input[type=file]", dz);
     const name = $("[data-file-name]", dz);
@@ -170,12 +169,12 @@
     });
   });
 
-  /* ---------- быстрые баллы при проверке ---------- */
+// быстрые баллы при проверке
   $$("[data-score]").forEach((b) => b.addEventListener("click", () => {
     const input = document.getElementById(b.dataset.target);
     if (input) { input.value = b.dataset.score; input.focus(); }
   }));
 
-  /* ---------- автоотправка фильтров ---------- */
+// автоотправка фильтров
   $$("form[data-autosubmit] select").forEach((s) => s.addEventListener("change", () => s.form.submit()));
 })();

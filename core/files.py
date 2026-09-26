@@ -1,4 +1,3 @@
-"""Безопасная отдача приватных файлов (только через проверку прав в представлении)."""
 import mimetypes
 import re
 from pathlib import Path

@@ -20,7 +20,6 @@ from .models import Competition, Registration, Result, Submission, Task
 from .services import compute_standings
 
 
-# ------------------------------------------------------------------ helpers
 def _get_competition(request, pk):
     comp = get_object_or_404(Competition.objects.select_related("discipline", "level"), pk=pk)
     if not comp.is_published and not (request.user.is_authenticated and request.user.is_organizer):
@@ -58,7 +57,6 @@ def _my_task_stats(user, comp):
     return stats
 
 
-# ------------------------------------------------------------------ list
 def competition_list(request):
     qs = (Competition.objects.visible().select_related("discipline", "level")
           .annotate(_participants_count=Count("registrations", distinct=True)))
@@ -98,7 +96,6 @@ def competition_list(request):
     })
 
 
-# ------------------------------------------------------------------ detail
 def competition_detail(request, pk):
     comp = _get_competition(request, pk)
     reg = _registration(request, comp)
@@ -164,7 +161,6 @@ def unregister(request, pk):
     return redirect(comp.get_absolute_url())
 
 
-# ------------------------------------------------------------------ arena
 def task_view(request, pk, letter):
     comp = _get_competition(request, pk)
     if not comp.has_contest:
@@ -248,7 +244,6 @@ def task_attachment(request, pk, letter):
     return serve_private(task.attachment, task.attachment_name or None, inline=True)
 
 
-# ------------------------------------------------------------------ submissions
 def _get_own_submission(request, sid):
     if not request.user.is_authenticated:
         raise PermissionDenied
@@ -274,7 +269,6 @@ def submission_download(request, sid):
     return resp
 
 
-# ------------------------------------------------------------------ results
 def results_csv(request, pk):
     comp = _get_competition(request, pk)
     if not comp.results_published and not _is_org(request):
@@ -295,7 +289,6 @@ def results_csv(request, pk):
 
 
 def _csv_safe(v):
-    """Защита от CSV/Formula-injection при открытии в Excel."""
     s = str(v)
     return "'" + s if s[:1] in ("=", "+", "-", "@", "\t", "\r") and not s.lstrip("-").replace(".", "").isdigit() else s
 

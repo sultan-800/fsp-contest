@@ -109,7 +109,7 @@ class Competition(models.Model):
     def get_absolute_url(self):
         return reverse("competitions:detail", args=[self.pk])
 
-    # --- статус -----------------------------------------------------------
+    # статус
     @property
     def status(self):
         if not self.is_published:
@@ -162,7 +162,7 @@ class Competition(models.Model):
         total = self.duration.total_seconds() or 1
         return int(min(100, max(0, (timezone.now() - self.start_at).total_seconds() / total * 100)))
 
-    # --- регистрация ------------------------------------------------------
+    # регистрация
     @property
     def registration_deadline(self):
         return self.registration_end or self.end_at
@@ -320,7 +320,6 @@ class Submission(models.Model):
 
 
 class Result(models.Model):
-    """Итоговый результат спортсмена в соревновании (связка Соревнование → Профиль → Рейтинг)."""
     competition = models.ForeignKey(Competition, on_delete=models.CASCADE, related_name="results")
     athlete = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="results")
     place = models.PositiveIntegerField("Место")

@@ -1,9 +1,3 @@
-"""
-Сквозные тесты основного сценария кейса:
-организатор создаёт контест → добавляет задания → публикует → спортсмен
-регистрируется → отправляет решение → организатор проверяет → итоги →
-результат в профиле → рейтинг. Плюс проверки безопасности.
-"""
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
@@ -50,7 +44,7 @@ class FullScenarioTest(TestCase):
         comp.refresh_from_db()
         self.assertEqual(comp.status, "published")
 
-        # спортсмены регистрируются; до старта задания закрыты
+        # спортсмены регаются, до старта задания закрыты
         for a in (self.a1, self.a2):
             c.force_login(a)
             c.post(reverse("competitions:register", args=[comp.pk]))
@@ -160,7 +154,6 @@ class SecurityTest(TestCase):
 
 
 class DemoPagesTest(TestCase):
-    """Все ключевые страницы открываются на демо-данных для обеих ролей."""
 
     @classmethod
     def setUpTestData(cls):
